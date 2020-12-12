@@ -1,7 +1,7 @@
 use std::fs;
 
-use structured_cmark::parser::parse;
-use structured_cmark::renderer::to_html;
+use struckdown::parser::parse;
+use struckdown::renderer::to_html;
 
 #[test]
 fn test_basics() {

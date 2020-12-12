@@ -1,6 +1,6 @@
 use std::fs;
 
-use structured_cmark::parser::parse;
+use struckdown::parser::parse;
 
 #[test]
 fn test_basics() {
