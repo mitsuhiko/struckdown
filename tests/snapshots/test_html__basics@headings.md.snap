@@ -3,9 +3,9 @@ source: tests/test_html.rs
 expression: html
 input_file: tests/inputs/headings.md
 ---
-<h1>One {#id-one}</h1>
-<h2>Two {#id-two}</h2>
-<h3>Three</h3>
+<h1 id="id-one"><code>One</code></h1>
+<h2 id="id-two">Two</h2>
+<h3 id="id-three"><em>Three</em></h3>
 <h4>Four</h4>
 <h5>Five</h5>
 <h6>Six</h6>

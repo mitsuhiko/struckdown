@@ -5,127 +5,157 @@ input_file: tests/inputs/headings.md
 ---
 - - type: start_tag
     tag: heading1
+    attrs:
+      id: id-one
   - offset: 0
-    len: 16
+    len: 18
     line: 1
     column: 0
-- - type: text
-    text: "One {#id-one}"
+- - type: inline_code
+    code: One
   - offset: 2
-    len: 13
+    len: 5
     line: 1
     column: 2
+- - type: text
+    text: ""
+  - offset: 7
+    len: 0
+    line: 1
+    column: 7
 - - type: end_tag
     tag: heading1
   - offset: 0
-    len: 16
+    len: 18
     line: 1
     column: 0
 - - type: start_tag
     tag: heading2
-  - offset: 17
+    attrs:
+      id: id-two
+  - offset: 19
     len: 17
     line: 3
     column: 0
 - - type: text
-    text: "Two {#id-two}"
-  - offset: 20
-    len: 13
+    text: Two
+  - offset: 22
+    len: 3
     line: 3
     column: 3
 - - type: end_tag
     tag: heading2
-  - offset: 17
+  - offset: 19
     len: 17
     line: 3
     column: 0
 - - type: start_tag
     tag: heading3
-  - offset: 35
-    len: 10
+    attrs:
+      id: id-three
+  - offset: 37
+    len: 24
     line: 5
     column: 0
-- - type: text
-    text: Three
-  - offset: 39
-    len: 5
+- - type: start_tag
+    tag: emphasis
+  - offset: 41
+    len: 7
     line: 5
     column: 4
+- - type: text
+    text: Three
+  - offset: 42
+    len: 5
+    line: 5
+    column: 5
+- - type: end_tag
+    tag: emphasis
+  - offset: 41
+    len: 7
+    line: 5
+    column: 4
+- - type: text
+    text: ""
+  - offset: 48
+    len: 0
+    line: 5
+    column: 11
 - - type: end_tag
     tag: heading3
-  - offset: 35
-    len: 10
+  - offset: 37
+    len: 24
     line: 5
     column: 0
 - - type: start_tag
     tag: heading4
-  - offset: 46
+  - offset: 62
     len: 10
     line: 7
     column: 0
 - - type: text
     text: Four
-  - offset: 51
+  - offset: 67
     len: 4
     line: 7
     column: 5
 - - type: end_tag
     tag: heading4
-  - offset: 46
+  - offset: 62
     len: 10
     line: 7
     column: 0
 - - type: start_tag
     tag: heading5
-  - offset: 57
+  - offset: 73
     len: 11
     line: 9
     column: 0
 - - type: text
     text: Five
-  - offset: 63
+  - offset: 79
     len: 4
     line: 9
     column: 6
 - - type: end_tag
     tag: heading5
-  - offset: 57
+  - offset: 73
     len: 11
     line: 9
     column: 0
 - - type: start_tag
     tag: heading6
-  - offset: 69
+  - offset: 85
     len: 11
     line: 11
     column: 0
 - - type: text
     text: Six
-  - offset: 76
+  - offset: 92
     len: 3
     line: 11
     column: 7
 - - type: end_tag
     tag: heading6
-  - offset: 69
+  - offset: 85
     len: 11
     line: 11
     column: 0
 - - type: start_tag
     tag: paragraph
-  - offset: 81
+  - offset: 97
     len: 14
     line: 13
     column: 0
 - - type: text
     text: "####### Seven"
-  - offset: 81
+  - offset: 97
     len: 13
     line: 13
     column: 0
 - - type: end_tag
     tag: paragraph
-  - offset: 81
+  - offset: 97
     len: 14
     line: 13
     column: 0

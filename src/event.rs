@@ -124,6 +124,10 @@ impl<'data> Event<'data> {
         &self.0
     }
 
+    pub fn ty_mut(&mut self) -> &mut EventType<'data> {
+        &mut self.0
+    }
+
     pub fn location(&self) -> &Location {
         &self.1
     }
