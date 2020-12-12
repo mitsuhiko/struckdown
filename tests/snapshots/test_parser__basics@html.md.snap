@@ -1,0 +1,101 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/html.md
+---
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 36
+    line: 1
+    column: 0
+- - type: text
+    text: "This document has some inline html:"
+  - offset: 0
+    len: 35
+    line: 1
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 36
+    line: 1
+    column: 0
+- - type: raw_html
+    html: "<div class=foo>\n"
+  - offset: 37
+    len: 16
+    line: 3
+    column: 0
+- - type: raw_html
+    html: "  bar\n"
+  - offset: 53
+    len: 6
+    line: 4
+    column: 0
+- - type: raw_html
+    html: "</div>\n"
+  - offset: 59
+    len: 7
+    line: 5
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 67
+    len: 34
+    line: 7
+    column: 0
+- - type: text
+    text: "And this has some mixed markdown:"
+  - offset: 67
+    len: 33
+    line: 7
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 67
+    len: 34
+    line: 7
+    column: 0
+- - type: raw_html
+    html: "<div class=foo>\n"
+  - offset: 102
+    len: 16
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 119
+    len: 16
+    line: 11
+    column: 0
+- - type: start_tag
+    tag: emphasis
+  - offset: 119
+    len: 15
+    line: 11
+    column: 0
+- - type: text
+    text: markdown here
+  - offset: 120
+    len: 13
+    line: 11
+    column: 1
+- - type: end_tag
+    tag: emphasis
+  - offset: 119
+    len: 15
+    line: 11
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 119
+    len: 16
+    line: 11
+    column: 0
+- - type: raw_html
+    html: "</div>"
+  - offset: 136
+    len: 6
+    line: 13
+    column: 0

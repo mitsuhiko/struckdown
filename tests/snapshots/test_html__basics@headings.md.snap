@@ -1,0 +1,13 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/headings.md
+---
+<h1>One {#id-one}</h1>
+<h2>Two {#id-two}</h2>
+<h3>Three</h3>
+<h4>Four</h4>
+<h5>Five</h5>
+<h6>Six</h6>
+<p>####### Seven</p>
+

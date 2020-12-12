@@ -1,0 +1,332 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/table.md
+---
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 28
+    line: 1
+    column: 0
+- - type: text
+    text: "| a | b | c |"
+  - offset: 0
+    len: 13
+    line: 1
+    column: 0
+- - type: soft_break
+  - offset: 13
+    len: 1
+    line: 1
+    column: 13
+- - type: text
+    text: "| 1 | 2 | 3 |"
+  - offset: 14
+    len: 13
+    line: 2
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 28
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: table
+    attrs:
+      alignments:
+        - none
+        - none
+        - none
+  - offset: 29
+    len: 60
+    line: 4
+    column: 0
+- - type: start_tag
+    tag: table_head
+  - offset: 29
+    len: 20
+    line: 4
+    column: 0
+- - type: start_tag
+    tag: table_cell
+  - offset: 31
+    len: 1
+    line: 4
+    column: 2
+- - type: text
+    text: a
+  - offset: 31
+    len: 1
+    line: 4
+    column: 2
+- - type: end_tag
+    tag: table_cell
+  - offset: 31
+    len: 1
+    line: 4
+    column: 2
+- - type: start_tag
+    tag: table_cell
+  - offset: 37
+    len: 1
+    line: 4
+    column: 8
+- - type: text
+    text: b
+  - offset: 37
+    len: 1
+    line: 4
+    column: 8
+- - type: end_tag
+    tag: table_cell
+  - offset: 37
+    len: 1
+    line: 4
+    column: 8
+- - type: start_tag
+    tag: table_cell
+  - offset: 43
+    len: 1
+    line: 4
+    column: 14
+- - type: text
+    text: c
+  - offset: 43
+    len: 1
+    line: 4
+    column: 14
+- - type: end_tag
+    tag: table_cell
+  - offset: 43
+    len: 1
+    line: 4
+    column: 14
+- - type: end_tag
+    tag: table_head
+  - offset: 29
+    len: 20
+    line: 4
+    column: 0
+- - type: start_tag
+    tag: table_row
+  - offset: 69
+    len: 20
+    line: 6
+    column: 0
+- - type: start_tag
+    tag: table_cell
+  - offset: 71
+    len: 1
+    line: 6
+    column: 2
+- - type: text
+    text: "1"
+  - offset: 71
+    len: 1
+    line: 6
+    column: 2
+- - type: end_tag
+    tag: table_cell
+  - offset: 71
+    len: 1
+    line: 6
+    column: 2
+- - type: start_tag
+    tag: table_cell
+  - offset: 77
+    len: 1
+    line: 6
+    column: 8
+- - type: text
+    text: "2"
+  - offset: 77
+    len: 1
+    line: 6
+    column: 8
+- - type: end_tag
+    tag: table_cell
+  - offset: 77
+    len: 1
+    line: 6
+    column: 8
+- - type: start_tag
+    tag: table_cell
+  - offset: 83
+    len: 1
+    line: 6
+    column: 14
+- - type: text
+    text: "3"
+  - offset: 83
+    len: 1
+    line: 6
+    column: 14
+- - type: end_tag
+    tag: table_cell
+  - offset: 83
+    len: 1
+    line: 6
+    column: 14
+- - type: end_tag
+    tag: table_row
+  - offset: 69
+    len: 20
+    line: 6
+    column: 0
+- - type: end_tag
+    tag: table
+  - offset: 29
+    len: 60
+    line: 4
+    column: 0
+- - type: start_tag
+    tag: table
+    attrs:
+      alignments:
+        - left
+        - center
+        - right
+  - offset: 90
+    len: 60
+    line: 8
+    column: 0
+- - type: start_tag
+    tag: table_head
+  - offset: 90
+    len: 20
+    line: 8
+    column: 0
+- - type: start_tag
+    tag: table_cell
+  - offset: 92
+    len: 1
+    line: 8
+    column: 2
+- - type: text
+    text: a
+  - offset: 92
+    len: 1
+    line: 8
+    column: 2
+- - type: end_tag
+    tag: table_cell
+  - offset: 92
+    len: 1
+    line: 8
+    column: 2
+- - type: start_tag
+    tag: table_cell
+  - offset: 99
+    len: 1
+    line: 8
+    column: 9
+- - type: text
+    text: b
+  - offset: 99
+    len: 1
+    line: 8
+    column: 9
+- - type: end_tag
+    tag: table_cell
+  - offset: 99
+    len: 1
+    line: 8
+    column: 9
+- - type: start_tag
+    tag: table_cell
+  - offset: 106
+    len: 1
+    line: 8
+    column: 16
+- - type: text
+    text: c
+  - offset: 106
+    len: 1
+    line: 8
+    column: 16
+- - type: end_tag
+    tag: table_cell
+  - offset: 106
+    len: 1
+    line: 8
+    column: 16
+- - type: end_tag
+    tag: table_head
+  - offset: 90
+    len: 20
+    line: 8
+    column: 0
+- - type: start_tag
+    tag: table_row
+  - offset: 130
+    len: 20
+    line: 10
+    column: 0
+- - type: start_tag
+    tag: table_cell
+  - offset: 132
+    len: 1
+    line: 10
+    column: 2
+- - type: text
+    text: "1"
+  - offset: 132
+    len: 1
+    line: 10
+    column: 2
+- - type: end_tag
+    tag: table_cell
+  - offset: 132
+    len: 1
+    line: 10
+    column: 2
+- - type: start_tag
+    tag: table_cell
+  - offset: 139
+    len: 1
+    line: 10
+    column: 9
+- - type: text
+    text: "2"
+  - offset: 139
+    len: 1
+    line: 10
+    column: 9
+- - type: end_tag
+    tag: table_cell
+  - offset: 139
+    len: 1
+    line: 10
+    column: 9
+- - type: start_tag
+    tag: table_cell
+  - offset: 146
+    len: 1
+    line: 10
+    column: 16
+- - type: text
+    text: "3"
+  - offset: 146
+    len: 1
+    line: 10
+    column: 16
+- - type: end_tag
+    tag: table_cell
+  - offset: 146
+    len: 1
+    line: 10
+    column: 16
+- - type: end_tag
+    tag: table_row
+  - offset: 130
+    len: 20
+    line: 10
+    column: 0
+- - type: end_tag
+    tag: table
+  - offset: 90
+    len: 60
+    line: 8
+    column: 0

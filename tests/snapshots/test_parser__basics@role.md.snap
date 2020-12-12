@@ -1,0 +1,178 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/role.md
+---
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 57
+    line: 1
+    column: 0
+- - type: text
+    text: "This shows the use of "
+  - offset: 0
+    len: 22
+    line: 1
+    column: 0
+- - type: interpreted_text
+    text: roles
+    role: role
+  - offset: 22
+    len: 13
+    line: 1
+    column: 22
+- - type: text
+    text: " and "
+  - offset: 35
+    len: 5
+    line: 1
+    column: 35
+- - type: interpreted_text
+    text: roles
+    role: role
+  - offset: 40
+    len: 15
+    line: 1
+    column: 40
+- - type: text
+    text: "."
+  - offset: 55
+    len: 1
+    line: 1
+    column: 55
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 57
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 58
+    len: 39
+    line: 3
+    column: 0
+- - type: text
+    text: "Contrast this {with} "
+  - offset: 58
+    len: 21
+    line: 3
+    column: 0
+- - type: inline_code
+    code: just some code
+  - offset: 79
+    len: 16
+    line: 3
+    column: 21
+- - type: text
+    text: "."
+  - offset: 95
+    len: 1
+    line: 3
+    column: 37
+- - type: end_tag
+    tag: paragraph
+  - offset: 58
+    len: 39
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: fenced_code
+    attrs:
+      argument: python
+  - offset: 98
+    len: 34
+    line: 5
+    column: 0
+- - type: text
+    text: "print(\"Hello World\")\n"
+  - offset: 108
+    len: 21
+    line: 6
+    column: 0
+- - type: end_tag
+    tag: fenced_code
+  - offset: 98
+    len: 34
+    line: 5
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 134
+    len: 20
+    line: 9
+    column: 0
+- - type: text
+    text: "But this is a role:"
+  - offset: 134
+    len: 19
+    line: 9
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 134
+    len: 20
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: directive
+    attrs:
+      role: role
+      argument: arguments
+  - offset: 155
+    len: 29
+    line: 11
+    column: 0
+- - type: text
+    text: "Hello\n"
+  - offset: 175
+    len: 6
+    line: 12
+    column: 0
+- - type: end_tag
+    tag: directive
+  - offset: 155
+    len: 29
+    line: 11
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 186
+    len: 15
+    line: 15
+    column: 0
+- - type: text
+    text: Stuff
+  - offset: 186
+    len: 5
+    line: 15
+    column: 0
+- - type: soft_break
+  - offset: 191
+    len: 1
+    line: 15
+    column: 5
+- - type: text
+    text: Bar
+  - offset: 192
+    len: 3
+    line: 16
+    column: 0
+- - type: hard_break
+  - offset: 195
+    len: 3
+    line: 16
+    column: 3
+- - type: text
+    text: Baz
+  - offset: 198
+    len: 3
+    line: 17
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 186
+    len: 15
+    line: 15
+    column: 0

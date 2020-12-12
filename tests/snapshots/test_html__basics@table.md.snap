@@ -1,0 +1,25 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/table.md
+---
+<p>| a | b | c || 1 | 2 | 3 |</p>
+<table><thead><th>a</th>
+<th>b</th>
+<th>c</th>
+</thead>
+<tbody><tr><th>1</th>
+<th>2</th>
+<th>3</th>
+</tr>
+</tbody></table>
+<table><thead><th align=left>a</th>
+<th align=center>b</th>
+<th align=right>c</th>
+</thead>
+<tbody><tr><th align=left>1</th>
+<th align=center>2</th>
+<th align=right>3</th>
+</tr>
+</tbody></table>
+

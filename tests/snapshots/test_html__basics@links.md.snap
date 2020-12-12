@@ -1,0 +1,12 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/links.md
+---
+<ul><li><a title="Title" href="&#x2f;">foo_norm</a></li>
+<li><a title="Title" href="&#x2f;">foo_ref</a></li>
+<li><a href="auto@link.invalid">auto@link.invalid</a></li>
+<li>[unknown_ref]</li>
+<li><img src="image.png" alt="alt em and strong it" title="aha"></li>
+</ul>
+

@@ -1,0 +1,339 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/lists.md
+---
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 23
+    line: 1
+    column: 0
+- - type: text
+    text: "This is a simple list:"
+  - offset: 0
+    len: 22
+    line: 1
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 23
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: unordered_list
+  - offset: 24
+    len: 13
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 24
+    len: 4
+    line: 3
+    column: 0
+- - type: text
+    text: a
+  - offset: 26
+    len: 1
+    line: 3
+    column: 2
+- - type: end_tag
+    tag: list_item
+  - offset: 24
+    len: 4
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 28
+    len: 4
+    line: 4
+    column: 0
+- - type: text
+    text: b
+  - offset: 30
+    len: 1
+    line: 4
+    column: 2
+- - type: end_tag
+    tag: list_item
+  - offset: 28
+    len: 4
+    line: 4
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 32
+    len: 5
+    line: 5
+    column: 0
+- - type: text
+    text: c
+  - offset: 34
+    len: 1
+    line: 5
+    column: 2
+- - type: end_tag
+    tag: list_item
+  - offset: 32
+    len: 5
+    line: 5
+    column: 0
+- - type: end_tag
+    tag: unordered_list
+  - offset: 24
+    len: 13
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 37
+    len: 25
+    line: 7
+    column: 0
+- - type: text
+    text: "This is an ordered list:"
+  - offset: 37
+    len: 24
+    line: 7
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 37
+    len: 25
+    line: 7
+    column: 0
+- - type: start_tag
+    tag: ordered_list
+    attrs:
+      start: 1
+  - offset: 63
+    len: 22
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 63
+    len: 7
+    line: 9
+    column: 0
+- - type: text
+    text: foo
+  - offset: 66
+    len: 3
+    line: 9
+    column: 3
+- - type: end_tag
+    tag: list_item
+  - offset: 63
+    len: 7
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 70
+    len: 7
+    line: 10
+    column: 0
+- - type: text
+    text: bar
+  - offset: 73
+    len: 3
+    line: 10
+    column: 3
+- - type: end_tag
+    tag: list_item
+  - offset: 70
+    len: 7
+    line: 10
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 77
+    len: 8
+    line: 11
+    column: 0
+- - type: text
+    text: baz
+  - offset: 80
+    len: 3
+    line: 11
+    column: 3
+- - type: end_tag
+    tag: list_item
+  - offset: 77
+    len: 8
+    line: 11
+    column: 0
+- - type: end_tag
+    tag: ordered_list
+  - offset: 63
+    len: 22
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 85
+    len: 47
+    line: 13
+    column: 0
+- - type: text
+    text: "An ordered list starting at a different start:"
+  - offset: 85
+    len: 46
+    line: 13
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 85
+    len: 47
+    line: 13
+    column: 0
+- - type: start_tag
+    tag: ordered_list
+    attrs:
+      start: 10
+  - offset: 133
+    len: 25
+    line: 15
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 133
+    len: 8
+    line: 15
+    column: 0
+- - type: text
+    text: foo
+  - offset: 137
+    len: 3
+    line: 15
+    column: 4
+- - type: end_tag
+    tag: list_item
+  - offset: 133
+    len: 8
+    line: 15
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 141
+    len: 8
+    line: 16
+    column: 0
+- - type: text
+    text: bar
+  - offset: 145
+    len: 3
+    line: 16
+    column: 4
+- - type: end_tag
+    tag: list_item
+  - offset: 141
+    len: 8
+    line: 16
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 149
+    len: 9
+    line: 17
+    column: 0
+- - type: text
+    text: baz
+  - offset: 153
+    len: 3
+    line: 17
+    column: 4
+- - type: end_tag
+    tag: list_item
+  - offset: 149
+    len: 9
+    line: 17
+    column: 0
+- - type: end_tag
+    tag: ordered_list
+  - offset: 133
+    len: 25
+    line: 15
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 158
+    len: 25
+    line: 19
+    column: 0
+- - type: text
+    text: "And this is a task list:"
+  - offset: 158
+    len: 24
+    line: 19
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 158
+    len: 25
+    line: 19
+    column: 0
+- - type: start_tag
+    tag: unordered_list
+  - offset: 184
+    len: 29
+    line: 21
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 184
+    len: 16
+    line: 21
+    column: 0
+- - type: checkbox
+    checked: false
+  - offset: 186
+    len: 3
+    line: 21
+    column: 2
+- - type: text
+    text: unchecked
+  - offset: 190
+    len: 9
+    line: 21
+    column: 6
+- - type: end_tag
+    tag: list_item
+  - offset: 184
+    len: 16
+    line: 21
+    column: 0
+- - type: start_tag
+    tag: list_item
+  - offset: 200
+    len: 13
+    line: 22
+    column: 0
+- - type: checkbox
+    checked: true
+  - offset: 202
+    len: 3
+    line: 22
+    column: 2
+- - type: text
+    text: checked
+  - offset: 206
+    len: 7
+    line: 22
+    column: 6
+- - type: end_tag
+    tag: list_item
+  - offset: 200
+    len: 13
+    line: 22
+    column: 0
+- - type: end_tag
+    tag: unordered_list
+  - offset: 184
+    len: 29
+    line: 21
+    column: 0

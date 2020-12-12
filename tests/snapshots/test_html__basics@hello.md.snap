@@ -1,0 +1,8 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/hello.md
+---
+<h1>Hello World!</h1>
+<p>This is a very basic example with <em>emphasis</em>.</p>
+

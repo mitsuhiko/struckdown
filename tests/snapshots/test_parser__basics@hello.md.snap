@@ -1,0 +1,65 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/hello.md
+---
+- - type: start_tag
+    tag: heading1
+  - offset: 0
+    len: 15
+    line: 1
+    column: 0
+- - type: text
+    text: Hello World!
+  - offset: 2
+    len: 12
+    line: 1
+    column: 2
+- - type: end_tag
+    tag: heading1
+  - offset: 0
+    len: 15
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 16
+    len: 45
+    line: 3
+    column: 0
+- - type: text
+    text: "This is a very basic example with "
+  - offset: 16
+    len: 34
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: emphasis
+  - offset: 50
+    len: 10
+    line: 3
+    column: 34
+- - type: text
+    text: emphasis
+  - offset: 51
+    len: 8
+    line: 3
+    column: 35
+- - type: end_tag
+    tag: emphasis
+  - offset: 50
+    len: 10
+    line: 3
+    column: 34
+- - type: text
+    text: "."
+  - offset: 60
+    len: 1
+    line: 3
+    column: 44
+- - type: end_tag
+    tag: paragraph
+  - offset: 16
+    len: 45
+    line: 3
+    column: 0

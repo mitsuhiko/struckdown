@@ -1,0 +1,14 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/role.md
+---
+<p>This shows the use of <span class="role-role">roles</span> and <span class="role-role">roles</span>.</p>
+<p>Contrast this {with} <code>just some code</code>.</p>
+<pre>print(&quot;Hello World&quot;)
+</pre>
+<p>But this is a role:</p>
+<div>Hello
+</div>
+<p>StuffBarBaz</p>
+

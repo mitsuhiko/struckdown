@@ -1,0 +1,13 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/html.md
+---
+<p>This document has some inline html:</p>
+<div class=foo>
+  bar
+</div>
+<p>And this has some mixed markdown:</p>
+<div class=foo>
+<p><em>markdown here</em></p>
+</div>

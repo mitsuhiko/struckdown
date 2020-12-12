@@ -1,0 +1,67 @@
+---
+source: tests/test_parser.rs
+expression: events
+input_file: tests/inputs/footnotes.md
+---
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 41
+    line: 1
+    column: 0
+- - type: text
+    text: This is text with
+  - offset: 0
+    len: 17
+    line: 1
+    column: 0
+- - type: footnote_reference
+    target: footnote
+  - offset: 17
+    len: 11
+    line: 1
+    column: 17
+- - type: text
+    text: " a footnote."
+  - offset: 28
+    len: 12
+    line: 1
+    column: 28
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 41
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: footnote_definition
+    attrs:
+      id: footnote
+  - offset: 42
+    len: 35
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 55
+    len: 22
+    line: 3
+    column: 13
+- - type: text
+    text: This is the footnote.
+  - offset: 55
+    len: 21
+    line: 3
+    column: 13
+- - type: end_tag
+    tag: paragraph
+  - offset: 55
+    len: 22
+    line: 3
+    column: 13
+- - type: end_tag
+    tag: footnote_definition
+  - offset: 42
+    len: 35
+    line: 3
+    column: 0
