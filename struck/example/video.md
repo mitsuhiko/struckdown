@@ -4,7 +4,7 @@ description: Example markdown file with a directive
 
 # Hello YouTube
 
-This is an example that has a custom directive which can be expanded with the
+This is an example that has a _custom directive_ which can be expanded with the
 `video-directive.py` file:
 
 ```

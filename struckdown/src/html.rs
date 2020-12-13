@@ -200,8 +200,8 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Event::RawHtml(RawHtmlEvent { ref html }) => {
                 write!(self.out, "{}", html)?;
             }
-            Event::SoftBreak => {}
-            Event::HardBreak => {}
+            Event::SoftBreak => write!(self.out, "\n")?,
+            Event::HardBreak => write!(self.out, "<br>\n")?,
             Event::Rule => {
                 write!(self.out, "<hr>")?;
             }
