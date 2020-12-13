@@ -6,7 +6,11 @@ use lazy_static::lazy_static;
 use pulldown_cmark as cm;
 use regex::Regex;
 
-use crate::event::{Alignment, Attrs, Event, EventType, Location, Str, Tag};
+use crate::event::{
+    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, EndTagEvent, Event,
+    FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, Location,
+    RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
+};
 
 lazy_static! {
     static ref TEXT_ROLE_RE: Regex = Regex::new(r"\{([^\r\n\}]+)\}$").unwrap();
@@ -14,31 +18,65 @@ lazy_static! {
     static ref HEADING_ID_RE: Regex = Regex::new(r"\s+\{#([^\r\n\}]+)\}\s*$").unwrap();
 }
 
-/// Reads until the end of an image tag all embedded content as raw string.
+/// Reads until the end of a tag and read embedded content as raw string.
 ///
 /// We do this because in markdown/cmark the alt text of an image is in fact
 /// supporting a lot of markdown syntax but it usually gets rendered out into
 /// an alt attribute.  Because of that we normalize this into text during parsing
-/// already so that stream processors don't need to deal with this oddity.
-fn read_raw_alt<'a, 'b, I: Iterator<Item = (cm::Event<'b>, Range<usize>)>>(
+/// already so that stream processors don't need to deal with this oddity.  Same
+/// applies to reading code blocks.
+fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
     iter: &'a mut I,
-) -> String {
+) -> Str<'data> {
     let mut depth = 1;
-    let mut rv = String::new();
+    let mut buffer = None;
+    let mut last_event = None;
+
+    macro_rules! ensure_buf {
+        () => {
+            match buffer {
+                Some(ref mut buffer) => buffer,
+                None => {
+                    let mut buf = String::new();
+                    if let Some(last_event) = last_event.take() {
+                        buf.push_str(&last_event);
+                    }
+                    buffer = Some(buf);
+                    buffer.as_mut().unwrap()
+                }
+            }
+        };
+    }
+
+    macro_rules! push {
+        ($expr:expr) => {
+            if last_event.is_none() && buffer.is_none() {
+                last_event = Some($expr);
+            } else {
+                ensure_buf!().push_str(&$expr);
+            }
+        };
+    }
+
     while let Some((event, _)) = iter.next() {
         match event {
             cm::Event::Start(..) => depth += 1,
             cm::Event::End(..) => depth -= 1,
-            cm::Event::Text(text) => rv.push_str(&text),
-            cm::Event::Code(code) => rv.push_str(&code),
-            cm::Event::SoftBreak | cm::Event::HardBreak => rv.push('\n'),
+            cm::Event::Text(text) => push!(text),
+            cm::Event::Code(code) => push!(code),
+            cm::Event::SoftBreak | cm::Event::HardBreak => ensure_buf!().push('\n'),
             _ => {}
         }
         if depth == 0 {
             break;
         }
     }
-    rv
+
+    match (buffer, last_event) {
+        (Some(buf), _) => buf.into(),
+        (None, Some(event)) => Str::from_cm_str(event),
+        (None, None) => "".into(),
+    }
 }
 
 /// A trailer is information that gets attached to the start tag when the end
@@ -46,7 +84,7 @@ fn read_raw_alt<'a, 'b, I: Iterator<Item = (cm::Event<'b>, Range<usize>)>>(
 ///
 /// Trailers are supported internally on all tags for which [`tag_supports_trailers`]
 /// returns `true`.
-pub enum Trailer<'data> {
+enum Trailer<'data> {
     /// Defines the id attribute via trailer.
     Id(Str<'data>),
 }
@@ -72,7 +110,7 @@ fn tag_supports_trailers(tag: Tag) -> bool {
 /// as necessary to automatically attach the trailers to the start tags.
 fn parse_with_trailers<'data>(
     s: &'data str,
-) -> impl Iterator<Item = (Event, Option<Trailer<'data>>)> {
+) -> impl Iterator<Item = (AnnotatedEvent, Option<Trailer<'data>>)> {
     let mut opts = cm::Options::empty();
     opts.insert(cm::Options::ENABLE_TABLES);
     opts.insert(cm::Options::ENABLE_STRIKETHROUGH);
@@ -116,7 +154,7 @@ fn parse_with_trailers<'data>(
                         cm::Tag::BlockQuote => Tag::BlockQuote,
                         cm::Tag::CodeBlock(kind) => match kind {
                             cm::CodeBlockKind::Fenced(lang) => {
-                                let lang: Str<'_> = lang.into();
+                                let lang = Str::from_cm_str(lang);
                                 if let Some(m) = CODE_ROLE_RE.captures(lang.as_str()) {
                                     let g1 = m.get(1).unwrap();
                                     let g2 = m.get(2).unwrap();
@@ -124,11 +162,32 @@ fn parse_with_trailers<'data>(
                                     attrs.argument = Some(lang.slice(g2.start(), g2.end()));
                                     Tag::Directive
                                 } else {
-                                    attrs.argument = Some(lang);
-                                    Tag::FencedCode
+                                    let code = read_raw(&mut iter);
+                                    return Some((
+                                        AnnotatedEvent::new_with_location(
+                                            Event::CodeBlock(CodeBlockEvent {
+                                                language: Some(lang),
+                                                code,
+                                            }),
+                                            loc,
+                                        ),
+                                        None,
+                                    ));
                                 }
                             }
-                            cm::CodeBlockKind::Indented => Tag::IndentedCode,
+                            cm::CodeBlockKind::Indented => {
+                                let code = read_raw(&mut iter);
+                                return Some((
+                                    AnnotatedEvent::new_with_location(
+                                        Event::CodeBlock(CodeBlockEvent {
+                                            language: None,
+                                            code,
+                                        }),
+                                        loc,
+                                    ),
+                                    None,
+                                ));
+                            }
                         },
                         cm::Tag::List(None) => Tag::UnorderedList,
                         cm::Tag::List(Some(start)) => {
@@ -137,7 +196,7 @@ fn parse_with_trailers<'data>(
                         }
                         cm::Tag::Item => Tag::ListItem,
                         cm::Tag::FootnoteDefinition(id) => {
-                            attrs.id = Some(id.into());
+                            attrs.id = Some(Str::from_cm_str(id));
                             Tag::FootnoteDefinition
                         }
                         cm::Tag::Table(alignments) => {
@@ -161,9 +220,9 @@ fn parse_with_trailers<'data>(
                         cm::Tag::Strong => Tag::Strong,
                         cm::Tag::Strikethrough => Tag::Strikethrough,
                         cm::Tag::Link(_, target, title) => {
-                            attrs.target = Some(target.into());
+                            attrs.target = Some(Str::from_cm_str(target));
                             if !title.is_empty() {
-                                attrs.title = Some(title.into());
+                                attrs.title = Some(Str::from_cm_str(title));
                             }
                             Tag::Link
                         }
@@ -171,22 +230,22 @@ fn parse_with_trailers<'data>(
                             // images are special in that we downgrade them from
                             // tags to toplevel events to not have to deal with
                             // nested text.
-                            let alt = read_raw_alt(&mut iter);
+                            let alt = read_raw(&mut iter);
                             return Some((
-                                Event::new(
-                                    EventType::Image {
-                                        target: target.into(),
-                                        alt: if alt.is_empty() {
+                                AnnotatedEvent::new_with_location(
+                                    Event::Image(ImageEvent {
+                                        target: Str::from_cm_str(target),
+                                        alt: if alt.as_str().is_empty() {
                                             None
                                         } else {
-                                            Some(alt.into())
+                                            Some(alt)
                                         },
                                         title: if title.is_empty() {
                                             None
                                         } else {
-                                            Some(title.into())
+                                            Some(Str::from_cm_str(title))
                                         },
-                                    },
+                                    }),
                                     loc,
                                 ),
                                 None,
@@ -194,16 +253,16 @@ fn parse_with_trailers<'data>(
                         }
                     };
                     tag_stack.push(tag);
-                    EventType::StartTag { tag, attrs }
+                    Event::StartTag(StartTagEvent { tag, attrs })
                 }
                 cm::Event::End(_) => {
                     trailer = pending_trailer.take();
-                    EventType::EndTag {
+                    Event::EndTag(EndTagEvent {
                         tag: tag_stack.pop().unwrap(),
-                    }
+                    })
                 }
                 cm::Event::Text(text) => {
-                    let mut text: Str<'_> = text.into();
+                    let mut text = Str::from_cm_str(text);
 
                     // handle roles
                     if let Some(&(cm::Event::Code(_), _)) = iter.peek() {
@@ -234,7 +293,7 @@ fn parse_with_trailers<'data>(
                         }
                     }
 
-                    EventType::Text { text }
+                    Event::Text(TextEvent { text })
                 }
                 cm::Event::Code(value) => {
                     // if there is a pending role then we're not working with a
@@ -243,25 +302,31 @@ fn parse_with_trailers<'data>(
                         loc.column -= column_adjustment;
                         loc.offset -= column_adjustment;
                         loc.len += column_adjustment;
-                        EventType::InterpretedText {
-                            text: value.into(),
+                        Event::InterpretedText(InterpretedTextEvent {
+                            text: Str::from_cm_str(value),
                             role: role.into(),
-                        }
+                        })
                     } else {
-                        EventType::InlineCode { code: value.into() }
+                        Event::InlineCode(InlineCodeEvent {
+                            code: Str::from_cm_str(value),
+                        })
                     }
                 }
-                cm::Event::Html(html) => EventType::RawHtml { html: html.into() },
-                cm::Event::FootnoteReference(target) => EventType::FootnoteReference {
-                    target: target.into(),
-                },
-                cm::Event::SoftBreak => EventType::SoftBreak,
-                cm::Event::HardBreak => EventType::HardBreak,
-                cm::Event::Rule => EventType::Rule,
-                cm::Event::TaskListMarker(checked) => EventType::Checkbox { checked },
+                cm::Event::Html(html) => Event::RawHtml(RawHtmlEvent {
+                    html: Str::from_cm_str(html),
+                }),
+                cm::Event::FootnoteReference(target) => {
+                    Event::FootnoteReference(FootnoteReferenceEvent {
+                        target: Str::from_cm_str(target),
+                    })
+                }
+                cm::Event::SoftBreak => Event::SoftBreak,
+                cm::Event::HardBreak => Event::HardBreak,
+                cm::Event::Rule => Event::Rule,
+                cm::Event::TaskListMarker(checked) => Event::Checkbox(CheckboxEvent { checked }),
             };
 
-            Some((Event::new(ty, loc), trailer))
+            Some((AnnotatedEvent::new_with_location(ty, loc), trailer))
         } else {
             None
         }
@@ -269,17 +334,20 @@ fn parse_with_trailers<'data>(
 }
 
 /// Recursively attaches trailers to start tags.
-fn buffer_for_trailers<'data, I>(event: Event<'data>, iter: &mut I) -> Vec<Event<'data>>
+fn buffer_for_trailers<'data, I>(
+    event: AnnotatedEvent<'data>,
+    iter: &mut I,
+) -> Vec<AnnotatedEvent<'data>>
 where
-    I: Iterator<Item = (Event<'data>, Option<Trailer<'data>>)>,
+    I: Iterator<Item = (AnnotatedEvent<'data>, Option<Trailer<'data>>)>,
 {
     let mut buffer = vec![event];
     let mut depth = 1;
 
     while let Some((event, trailer)) = iter.next() {
         // keep track of the tag depth
-        match event.ty() {
-            &EventType::StartTag { tag, .. } => {
+        match event.event() {
+            &Event::StartTag(StartTagEvent { tag, .. }) => {
                 if tag_supports_trailers(tag) {
                     buffer.extend(buffer_for_trailers(event, iter));
                     continue;
@@ -287,14 +355,14 @@ where
                     depth += 1;
                 }
             }
-            &EventType::EndTag { .. } => depth -= 1,
+            &Event::EndTag { .. } => depth -= 1,
             _ => {}
         }
         buffer.push(event);
 
         // attach an end tag trailer to the start tag if needed.
         if depth == 0 {
-            if let EventType::StartTag { attrs, .. } = buffer[0].ty_mut() {
+            if let Event::StartTag(StartTagEvent { attrs, .. }) = buffer[0].event_mut() {
                 match trailer {
                     Some(Trailer::Id(new_id)) => {
                         attrs.id = Some(new_id);
@@ -310,11 +378,11 @@ where
 }
 
 /// Parses structured cmark into an event stream.
-pub fn parse(s: &str) -> impl Iterator<Item = Event> {
+pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
     let mut iter = parse_with_trailers(s);
     iter::from_fn(move || {
         if let Some((event, _)) = iter.next() {
-            if let &EventType::StartTag { tag, .. } = event.ty() {
+            if let &Event::StartTag(StartTagEvent { tag, .. }) = event.event() {
                 if tag_supports_trailers(tag) {
                     return Some(Either::Left(
                         buffer_for_trailers(event, &mut iter).into_iter(),

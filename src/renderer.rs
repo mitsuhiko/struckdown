@@ -3,7 +3,11 @@ use std::io::{self, Write};
 
 use v_htmlescape::escape;
 
-use crate::event::{Alignment, Attrs, Event, EventType, Str, Tag};
+use crate::event::{
+    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, EndTagEvent, Event,
+    FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, RawHtmlEvent,
+    StartTagEvent, Str, Tag, TextEvent,
+};
 
 pub struct TableState {
     alignments: Vec<Alignment>,
@@ -27,8 +31,6 @@ fn is_block_tag(tag: Tag) -> bool {
         Tag::Heading5 => true,
         Tag::Heading6 => true,
         Tag::BlockQuote => true,
-        Tag::IndentedCode => true,
-        Tag::FencedCode => true,
         Tag::OrderedList => true,
         Tag::UnorderedList => true,
         Tag::ListItem => true,
@@ -64,8 +66,6 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Tag::Heading5 => "h5",
             Tag::Heading6 => "h6",
             Tag::BlockQuote => "blockquote",
-            Tag::IndentedCode => "pre",
-            Tag::FencedCode => "pre",
             Tag::OrderedList => "ol",
             Tag::UnorderedList => "ul",
             Tag::ListItem => "li",
@@ -85,7 +85,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         }
     }
 
-    fn start_tag(&mut self, tag: Tag, attrs: &Attrs<'_>) -> Result<(), io::Error> {
+    fn start_tag(&mut self, tag: Tag, attrs: &Attrs) -> Result<(), io::Error> {
         let html_tag = self.tag_to_html_tag(tag);
         write!(self.out, "<{}", html_tag)?;
 
@@ -179,18 +179,28 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         Ok(())
     }
 
-    pub fn event(&mut self, event: &Event<'data>) -> Result<(), io::Error> {
-        match *event.ty() {
-            EventType::StartTag { tag, ref attrs } => {
+    pub fn event(&mut self, event: &AnnotatedEvent<'data>) -> Result<(), io::Error> {
+        match *event.event() {
+            Event::StartTag(StartTagEvent { tag, ref attrs }) => {
                 self.start_tag(tag, attrs)?;
             }
-            EventType::EndTag { tag } => {
+            Event::EndTag(EndTagEvent { tag }) => {
                 self.end_tag(tag)?;
             }
-            EventType::Text { ref text } => {
+            Event::Text(TextEvent { ref text }) => {
                 write!(self.out, "{}", escape(text.as_str()))?;
             }
-            EventType::InterpretedText { ref text, ref role } => {
+            Event::CodeBlock(CodeBlockEvent {
+                ref code,
+                ref language,
+            }) => {
+                write!(
+                    self.out,
+                    "<pre><code>{}</code></pre>",
+                    escape(code.as_str())
+                )?;
+            }
+            Event::InterpretedText(InterpretedTextEvent { ref text, ref role }) => {
                 write!(
                     self.out,
                     "<span class=\"role-{}\">{}</span>",
@@ -198,14 +208,14 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                     escape(text.as_str())
                 )?;
             }
-            EventType::InlineCode { ref code } => {
+            Event::InlineCode(InlineCodeEvent { ref code }) => {
                 write!(self.out, "<code>{}</code>", escape(code.as_str()))?;
             }
-            EventType::Image {
+            Event::Image(ImageEvent {
                 ref target,
                 ref alt,
                 ref title,
-            } => {
+            }) => {
                 write!(
                     self.out,
                     "<img src=\"{}\" alt=\"{}\" title=\"{}\">",
@@ -214,22 +224,22 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                     title.as_ref().map_or("", |x| x.as_str()),
                 )?;
             }
-            EventType::RawHtml { ref html } => {
+            Event::RawHtml(RawHtmlEvent { ref html }) => {
                 write!(self.out, "{}", html)?;
             }
-            EventType::SoftBreak => {}
-            EventType::HardBreak => {}
-            EventType::Rule => {
+            Event::SoftBreak => {}
+            Event::HardBreak => {}
+            Event::Rule => {
                 write!(self.out, "<hr>")?;
             }
-            EventType::Checkbox { checked } => {
+            Event::Checkbox(CheckboxEvent { checked }) => {
                 write!(
                     self.out,
                     "<input type=checkbox disabled{}>",
                     if checked { " checked" } else { "" }
                 )?;
             }
-            EventType::FootnoteReference { ref target } => {
+            Event::FootnoteReference(FootnoteReferenceEvent { ref target }) => {
                 let number = match self.footnotes.get(target) {
                     Some(&num) => num,
                     None => {
@@ -250,7 +260,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     }
 }
 
-pub fn to_html<'a, I: Iterator<Item = Event<'a>>>(iter: I) -> String {
+pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(iter: I) -> String {
     let mut out = Vec::<u8>::new();
     let mut renderer = HtmlRenderer::new(&mut out);
     for event in iter {

@@ -7,6 +7,15 @@ use std::fmt::{self, Debug, Display};
 use pulldown_cmark as cm;
 use serde::{Deserialize, Serialize};
 
+/// An internal string type.
+///
+/// This is not so much a string type as a container holding different
+/// types of strings.  It does not even attempt to deref into a string
+/// instead just provides a method [`Str::as_str`] to return the inner
+/// value as string slice.
+///
+/// This string can be constructed from various other string types
+/// via the [`From::from`] method.
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Str<'data> {
     inner: cm::CowStr<'data>,
@@ -39,9 +48,17 @@ impl From<String> for Str<'static> {
     }
 }
 
-impl<'data> From<cm::CowStr<'data>> for Str<'data> {
-    fn from(value: cm::CowStr<'data>) -> Str<'data> {
-        Str { inner: value }
+impl From<Box<str>> for Str<'static> {
+    fn from(value: Box<str>) -> Str<'static> {
+        Str {
+            inner: cm::CowStr::Boxed(value),
+        }
+    }
+}
+
+impl<'data> From<&'data str> for Str<'data> {
+    fn from(value: &'data str) -> Str<'data> {
+        Cow::Borrowed(value).into()
     }
 }
 
@@ -59,7 +76,18 @@ impl<'data> From<Cow<'data, str>> for Str<'data> {
 }
 
 impl<'data> Str<'data> {
-    pub fn slice(&self, start: usize, end: usize) -> Str<'data> {
+    /// Returns the contained string as string slice.
+    pub fn as_str(&self) -> &str {
+        &self.inner
+    }
+
+    /// Creates a string from a cmark string.
+    pub(crate) fn from_cm_str(value: cm::CowStr<'data>) -> Str<'data> {
+        Str { inner: value }
+    }
+
+    /// Slices the string down.
+    pub(crate) fn slice(&self, start: usize, end: usize) -> Str<'data> {
         Str {
             inner: match self.inner {
                 cm::CowStr::Borrowed(val) => cm::CowStr::Borrowed(&val[start..end]),
@@ -98,78 +126,128 @@ impl<'data> Ord for Str<'data> {
     }
 }
 
-impl<'data> Str<'data> {
-    pub fn as_str(&self) -> &str {
-        &self.inner
-    }
-}
-
+/// Location information for an annotated event.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Location {
+    /// Byte offset within the source document.
     pub offset: usize,
+    /// Length in bytes in the source document.
     pub len: usize,
+    /// Line in the source document (1 indexed).
     pub line: usize,
+    /// Column in the source document (0 indexed).
     pub column: usize,
 }
 
+/// Event with annotations.
+///
+/// An annotated event is generally the same as an [`Event`] but it contains
+/// optional annotations.  Annotations are generally just the location information
+/// about where the event ocurred in the original source document.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Event<'data>(EventType<'data>, Location);
+pub struct AnnotatedEvent<'data>(Event<'data>, Option<Location>);
 
-impl<'data> Event<'data> {
-    pub fn new(ty: EventType<'data>, loc: Location) -> Event<'data> {
-        Event(ty, loc)
+impl<'data> AnnotatedEvent<'data> {
+    /// Creates an annotated event with location.
+    pub fn new_with_location(event: Event<'data>, loc: Location) -> AnnotatedEvent<'data> {
+        AnnotatedEvent(event, Some(loc))
     }
 
-    pub fn ty(&self) -> &EventType<'data> {
+    /// Returns the embedded event.
+    pub fn event(&self) -> &Event<'data> {
         &self.0
     }
 
-    pub fn ty_mut(&mut self) -> &mut EventType<'data> {
+    /// Mutable access to the event.
+    pub fn event_mut(&mut self) -> &mut Event<'data> {
         &mut self.0
     }
 
-    pub fn location(&self) -> &Location {
-        &self.1
+    /// Returns the annotated location.
+    pub fn location(&self) -> Option<&Location> {
+        self.1.as_ref()
+    }
+
+    /// Sets a new location replacing the old.
+    pub fn set_location(&mut self, location: Option<Location>) {
+        self.1 = location;
+    }
+
+    /// Extracts the embedded event.
+    pub fn into_event(self) -> Event<'data> {
+        self.0
     }
 }
 
+impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
+    fn from(event: Event<'data>) -> AnnotatedEvent<'data> {
+        AnnotatedEvent(event, None)
+    }
+}
+
+/// Alignment information.
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum Alignment {
+    /// Undefined alignment
     None,
+    /// Left aligned
     Left,
+    /// Centered
     Center,
+    /// Right aligned
     Right,
 }
 
+/// Tag type
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum Tag {
+    /// `<p>` tag equivalent.
     Paragraph,
+    /// `<h1>` tag equivalent.
     Heading1,
+    /// `<h2>` tag equivalent.
     Heading2,
+    /// `<h3>` tag equivalent.
     Heading3,
+    /// `<h4>` tag equivalent.
     Heading4,
+    /// `<h5>` tag equivalent.
     Heading5,
+    /// `<h6>` tag equivalent.
     Heading6,
+    /// `<blockquote>` tag equivalent.
     BlockQuote,
-    IndentedCode,
-    FencedCode,
+    /// `<ol>` equivalent.
     OrderedList,
+    /// `<ul>` equivalent.
     UnorderedList,
+    /// `<li>` equivalent.
     ListItem,
+    /// Defines a footnote.
     FootnoteDefinition,
+    /// `<table>` equivalent.
     Table,
+    /// `<thead>` equivalent (mandatory).
     TableHead,
+    /// `<tr>` equivalent.
     TableRow,
+    /// `<th>` / `<td>` equivalent depending on where.
     TableCell,
+    /// `<em>` equivalent.
     Emphasis,
+    /// `<strong>` equivalent.
     Strong,
+    /// `<ss>` equivalent.
     Strikethrough,
+    /// `<a>` equivalent.
     Link,
+    /// Unreplaced raw directive.
     Directive,
 }
 
+/// Attributes for tags.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Attrs<'data> {
     /// A role determines for the processing system how to interpret
@@ -266,39 +344,105 @@ impl<'data> Attrs<'data> {
     }
 }
 
+/// Emitted when a tag starts.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StartTagEvent<'data> {
+    /// The tag that was started by this event.
+    pub tag: Tag,
+    /// Attached attributes to this event.
+    #[serde(skip_serializing_if = "Attrs::is_empty")]
+    pub attrs: Attrs<'data>,
+}
+
+/// Emitted when a tag ends.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EndTagEvent {
+    /// The tag that ends.
+    pub tag: Tag,
+}
+/// A text event
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TextEvent<'data> {
+    pub text: Str<'data>,
+}
+
+/// Not yet filled in interpreted text.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InterpretedTextEvent<'data> {
+    /// The name of the role.
+    pub role: Str<'data>,
+    /// Text to the interpreted with that role.
+    pub text: Str<'data>,
+}
+
+/// Code block
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CodeBlockEvent<'data> {
+    /// The language argument to the code block.
+    pub language: Option<Str<'data>>,
+    /// The raw code to be emitted.
+    pub code: Str<'data>,
+}
+
+/// Inline code
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InlineCodeEvent<'data> {
+    /// The raw code to be emitted.
+    pub code: Str<'data>,
+}
+
+/// An embedded image
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ImageEvent<'data> {
+    /// The target location of the image
+    pub target: Str<'data>,
+    /// The optional alt text of the image
+    pub alt: Option<Str<'data>>,
+    /// The optional title of the image
+    pub title: Option<Str<'data>>,
+}
+
+/// Embedded raw HTML
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RawHtmlEvent<'data> {
+    pub html: Str<'data>,
+}
+
+/// A checkbox from a task list.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CheckboxEvent {
+    pub checked: bool,
+}
+
+/// A reference to a footnote.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FootnoteReferenceEvent<'data> {
+    pub target: Str<'data>,
+}
+
+/// A event in a struckdown stream.
+///
+/// Struckdown events are not complete reflections of a markdown document.  In
+/// fact it's not a goal to be able to go back from a struckdown event stream to
+/// the original markdown document.  Certain normalizations are performed as part
+/// of the parsing process to make it easier to perform stream processing.  As an
+/// example images are no longer represented as tags but events.  Another example
+/// are code tags which are normalized into an abstract code tag no matter the
+/// original syntax.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
-pub enum EventType<'data> {
-    /// Starts a tag with optional attributes
-    StartTag {
-        tag: Tag,
-        #[serde(skip_serializing_if = "Attrs::is_empty")]
-        attrs: Attrs<'data>,
-    },
-    /// Ends a specific tag.
-    EndTag { tag: Tag },
-    /// Raw, uninterpreted text
-    Text { text: Str<'data> },
-    /// Interpreted text (text with role)
-    InterpretedText { text: Str<'data>, role: Str<'data> },
-    /// Inline cod
-    InlineCode { code: Str<'data> },
-    /// An image.
-    Image {
-        target: Str<'data>,
-        alt: Option<Str<'data>>,
-        title: Option<Str<'data>>,
-    },
-    /// Raw HTML
-    RawHtml { html: Str<'data> },
-    /// Soft break (a space)
+pub enum Event<'data> {
+    StartTag(StartTagEvent<'data>),
+    EndTag(EndTagEvent),
+    Text(TextEvent<'data>),
+    InterpretedText(InterpretedTextEvent<'data>),
+    CodeBlock(CodeBlockEvent<'data>),
+    InlineCode(InlineCodeEvent<'data>),
+    Image(ImageEvent<'data>),
+    RawHtml(RawHtmlEvent<'data>),
     SoftBreak,
-    /// Hard break (rendered line break)
     HardBreak,
-    /// Horizontal ruler
     Rule,
-    /// A task list item.
-    Checkbox { checked: bool },
-    /// Links to a footnote
-    FootnoteReference { target: Str<'data> },
+    Checkbox(CheckboxEvent),
+    FootnoteReference(FootnoteReferenceEvent<'data>),
 }
