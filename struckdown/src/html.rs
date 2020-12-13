@@ -161,7 +161,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                 if let Some(language) = language {
                     write!(self.out, " class=\"lang-{}\"", language.as_str())?;
                 }
-                write!(self.out, ">{}</code></pre>", escape(code.as_str()))?;
+                writeln!(self.out, ">{}</code></pre>", escape(code.as_str()))?;
             }
             Event::Directive(DirectiveEvent {
                 ref name, ref body, ..
