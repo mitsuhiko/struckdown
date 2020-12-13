@@ -1,3 +1,4 @@
+//! Implements an HTML renderer.
 use std::collections::HashMap;
 use std::io::{self, Write};
 
@@ -9,7 +10,7 @@ use crate::event::{
     StartTagEvent, Str, Tag, TextEvent,
 };
 
-pub struct HtmlRenderer<'data, F> {
+struct HtmlRenderer<'data, F> {
     out: F,
     footnotes: HashMap<Str<'data>, usize>,
 }
@@ -231,6 +232,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     }
 }
 
+/// Renders an event stream into HTML.
 pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(iter: I) -> String {
     let mut out = Vec::<u8>::new();
     let mut renderer = HtmlRenderer::new(&mut out);

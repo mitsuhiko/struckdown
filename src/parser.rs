@@ -1,3 +1,4 @@
+//! Gives access to the stream parser.
 use std::iter;
 use std::ops::Range;
 

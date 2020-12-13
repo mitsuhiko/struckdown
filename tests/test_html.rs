@@ -1,7 +1,7 @@
 use std::fs;
 
+use struckdown::html::to_html;
 use struckdown::parser::parse;
-use struckdown::renderer::to_html;
 
 #[test]
 fn test_basics() {

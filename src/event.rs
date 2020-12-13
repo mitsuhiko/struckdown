@@ -1,3 +1,4 @@
+//! Implements all types emitted from an event.
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
@@ -153,7 +154,9 @@ pub struct Location {
 /// about where the event ocurred in the original source document.
 #[derive(Debug)]
 pub struct AnnotatedEvent<'data> {
+    /// The actual event.
     pub event: Event<'data>,
+    /// The optional location.
     pub location: Option<Location>,
 }
 impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
