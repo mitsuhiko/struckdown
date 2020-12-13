@@ -4,20 +4,13 @@ use std::io::{self, Write};
 use v_htmlescape::escape;
 
 use crate::event::{
-    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, EndTagEvent, Event,
-    FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, RawHtmlEvent,
+    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent, EndTagEvent,
+    Event, FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, RawHtmlEvent,
     StartTagEvent, Str, Tag, TextEvent,
 };
 
-pub struct TableState {
-    alignments: Vec<Alignment>,
-    cell_is_head: bool,
-    cell_index: usize,
-}
-
 pub struct HtmlRenderer<'data, F> {
     out: F,
-    table_state: Option<TableState>,
     footnotes: HashMap<Str<'data>, usize>,
 }
 
@@ -43,7 +36,8 @@ fn is_block_tag(tag: Tag) -> bool {
         Tag::Strong => false,
         Tag::Strikethrough => false,
         Tag::Link => false,
-        Tag::Directive => true,
+        Tag::TableHeader => true,
+        Tag::TableBody => true,
     }
 }
 
@@ -51,7 +45,6 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     pub fn new(out: F) -> HtmlRenderer<'data, F> {
         HtmlRenderer {
             out,
-            table_state: None,
             footnotes: HashMap::new(),
         }
     }
@@ -71,17 +64,15 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Tag::ListItem => "li",
             Tag::FootnoteDefinition => "div",
             Tag::Table => "table",
-            Tag::TableHead => "thead",
+            Tag::TableHeader => "thead",
+            Tag::TableBody => "tbody",
             Tag::TableRow => "tr",
-            Tag::TableCell => match self.table_state.as_ref().map(|x| x.cell_is_head) {
-                None | Some(false) => "td",
-                Some(true) => "th",
-            },
+            Tag::TableHead => "th",
+            Tag::TableCell => "td",
             Tag::Emphasis => "em",
             Tag::Strong => "strong",
             Tag::Strikethrough => "ss",
             Tag::Link => "a",
-            Tag::Directive => "div",
         }
     }
 
@@ -95,6 +86,8 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                 write!(self.out, " start={}", start)?;
             }
         }
+
+        let mut combined_style = String::new();
         if let Some(id) = attrs.id() {
             write!(self.out, " id=\"{}\"", id)?;
         }
@@ -104,42 +97,27 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         if let Some(target) = attrs.target() {
             write!(self.out, " href=\"{}\"", escape(target))?;
         }
+
+        combined_style.push_str(match attrs.alignment() {
+            Alignment::None => "",
+            Alignment::Left => "text-align: left",
+            Alignment::Center => "text-align: center",
+            Alignment::Right => "text-align: right",
+        });
+
         for (key, value) in attrs.iter_custom() {
-            write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
+            if key == "style" {
+                if !combined_style.is_empty() {
+                    combined_style.push_str("; ");
+                }
+                combined_style.push_str(value.as_str());
+            } else {
+                write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
+            }
         }
 
-        match tag {
-            Tag::Table => {
-                self.table_state = Some(TableState {
-                    alignments: attrs.alignments().iter().copied().collect(),
-                    cell_is_head: false,
-                    cell_index: 0,
-                });
-            }
-            Tag::TableHead => {
-                if let Some(ref mut state) = self.table_state {
-                    state.cell_is_head = true;
-                    state.cell_index = 0;
-                }
-            }
-            Tag::TableRow => {
-                if let Some(ref mut state) = self.table_state {
-                    state.cell_index = 0;
-                }
-            }
-            Tag::TableCell => {
-                match self
-                    .table_state
-                    .as_ref()
-                    .and_then(|x| x.alignments.get(x.cell_index).copied())
-                {
-                    Some(Alignment::Left) => write!(self.out, " align=left")?,
-                    Some(Alignment::Center) => write!(self.out, " align=center")?,
-                    Some(Alignment::Right) => write!(self.out, " align=right")?,
-                    Some(Alignment::None) | None => {}
-                }
-            }
-            _ => {}
+        if !combined_style.is_empty() {
+            write!(self.out, " style=\"{}\"", escape(&combined_style))?;
         }
 
         write!(self.out, ">")?;
@@ -150,31 +128,12 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     fn end_tag(&mut self, tag: Tag) -> Result<(), io::Error> {
         let html_tag = self.tag_to_html_tag(tag);
 
-        if tag == Tag::Table {
-            write!(self.out, "</tbody>")?;
-        }
-
         write!(
             self.out,
             "</{}>{}",
             html_tag,
             if is_block_tag(tag) { "\n" } else { "" }
         )?;
-
-        match tag {
-            Tag::Table => {
-                self.table_state = None;
-            }
-            Tag::TableHead => {
-                write!(self.out, "<tbody>")?;
-            }
-            Tag::TableCell => {
-                if let Some(ref mut state) = self.table_state {
-                    state.cell_index += 1;
-                }
-            }
-            _ => {}
-        }
 
         Ok(())
     }
@@ -194,10 +153,20 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                 ref code,
                 ref language,
             }) => {
+                write!(self.out, "<pre><code")?;
+                if let Some(language) = language {
+                    write!(self.out, " class=\"lang-{}\"", language.as_str())?;
+                }
+                write!(self.out, ">{}</code></pre>", escape(code.as_str()))?;
+            }
+            Event::Directive(DirectiveEvent {
+                ref name, ref body, ..
+            }) => {
                 write!(
                     self.out,
-                    "<pre><code>{}</code></pre>",
-                    escape(code.as_str())
+                    "<div class=\"directive-{}\"><pre>{}</pre></div>",
+                    escape(name.as_str()),
+                    escape(body.as_str()),
                 )?;
             }
             Event::InterpretedText(InterpretedTextEvent { ref text, ref role }) => {

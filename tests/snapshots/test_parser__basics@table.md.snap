@@ -34,23 +34,18 @@ input_file: tests/inputs/table.md
     column: 0
 - - type: start_tag
     tag: table
-    attrs:
-      alignments:
-        - none
-        - none
-        - none
   - offset: 29
     len: 60
     line: 4
     column: 0
 - - type: start_tag
-    tag: table_head
+    tag: table_header
   - offset: 29
     len: 20
     line: 4
     column: 0
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
   - offset: 31
     len: 1
     line: 4
@@ -62,13 +57,13 @@ input_file: tests/inputs/table.md
     line: 4
     column: 2
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 31
     len: 1
     line: 4
     column: 2
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
   - offset: 37
     len: 1
     line: 4
@@ -80,13 +75,13 @@ input_file: tests/inputs/table.md
     line: 4
     column: 8
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 37
     len: 1
     line: 4
     column: 8
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
   - offset: 43
     len: 1
     line: 4
@@ -98,17 +93,20 @@ input_file: tests/inputs/table.md
     line: 4
     column: 14
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 43
     len: 1
     line: 4
     column: 14
 - - type: end_tag
-    tag: table_head
+    tag: table_header
   - offset: 29
     len: 20
     line: 4
     column: 0
+- - type: start_tag
+    tag: table_body
+  - ~
 - - type: start_tag
     tag: table_row
   - offset: 69
@@ -176,6 +174,9 @@ input_file: tests/inputs/table.md
     line: 6
     column: 0
 - - type: end_tag
+    tag: table_body
+  - ~
+- - type: end_tag
     tag: table
   - offset: 29
     len: 60
@@ -183,23 +184,20 @@ input_file: tests/inputs/table.md
     column: 0
 - - type: start_tag
     tag: table
-    attrs:
-      alignments:
-        - left
-        - center
-        - right
   - offset: 90
     len: 60
     line: 8
     column: 0
 - - type: start_tag
-    tag: table_head
+    tag: table_header
   - offset: 90
     len: 20
     line: 8
     column: 0
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
+    attrs:
+      alignment: left
   - offset: 92
     len: 1
     line: 8
@@ -211,13 +209,15 @@ input_file: tests/inputs/table.md
     line: 8
     column: 2
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 92
     len: 1
     line: 8
     column: 2
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
+    attrs:
+      alignment: center
   - offset: 99
     len: 1
     line: 8
@@ -229,13 +229,15 @@ input_file: tests/inputs/table.md
     line: 8
     column: 9
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 99
     len: 1
     line: 8
     column: 9
 - - type: start_tag
-    tag: table_cell
+    tag: table_head
+    attrs:
+      alignment: right
   - offset: 106
     len: 1
     line: 8
@@ -247,17 +249,20 @@ input_file: tests/inputs/table.md
     line: 8
     column: 16
 - - type: end_tag
-    tag: table_cell
+    tag: table_head
   - offset: 106
     len: 1
     line: 8
     column: 16
 - - type: end_tag
-    tag: table_head
+    tag: table_header
   - offset: 90
     len: 20
     line: 8
     column: 0
+- - type: start_tag
+    tag: table_body
+  - ~
 - - type: start_tag
     tag: table_row
   - offset: 130
@@ -266,6 +271,8 @@ input_file: tests/inputs/table.md
     column: 0
 - - type: start_tag
     tag: table_cell
+    attrs:
+      alignment: left
   - offset: 132
     len: 1
     line: 10
@@ -284,6 +291,8 @@ input_file: tests/inputs/table.md
     column: 2
 - - type: start_tag
     tag: table_cell
+    attrs:
+      alignment: center
   - offset: 139
     len: 1
     line: 10
@@ -302,6 +311,8 @@ input_file: tests/inputs/table.md
     column: 9
 - - type: start_tag
     tag: table_cell
+    attrs:
+      alignment: right
   - offset: 146
     len: 1
     line: 10
@@ -324,6 +335,9 @@ input_file: tests/inputs/table.md
     len: 20
     line: 10
     column: 0
+- - type: end_tag
+    tag: table_body
+  - ~
 - - type: end_tag
     tag: table
   - offset: 90

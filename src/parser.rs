@@ -7,15 +7,16 @@ use pulldown_cmark as cm;
 use regex::Regex;
 
 use crate::event::{
-    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, EndTagEvent, Event,
-    FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, Location,
-    RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
+    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent, EndTagEvent,
+    Event, FootnoteReferenceEvent, FrontMatter, ImageEvent, InlineCodeEvent, InterpretedTextEvent,
+    Location, RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
 };
 
 lazy_static! {
     static ref TEXT_ROLE_RE: Regex = Regex::new(r"\{([^\r\n\}]+)\}$").unwrap();
-    static ref CODE_ROLE_RE: Regex = Regex::new(r"^\{([^\r\n\}]+)\}(?:\s+(.*?))$").unwrap();
+    static ref DIRECTIVE_RE: Regex = Regex::new(r"^\{([^\r\n\}]+)\}(?:\s+(.*?))?$").unwrap();
     static ref HEADING_ID_RE: Regex = Regex::new(r"\s+\{#([^\r\n\}]+)\}\s*$").unwrap();
+    static ref FRONTMATTER_RE: Regex = Regex::new(r"(?sm)^---\s*$(.*?)^---\s*$\r?\n?").unwrap();
 }
 
 /// Reads until the end of a tag and read embedded content as raw string.
@@ -79,6 +80,23 @@ fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
     }
 }
 
+/// parse front matter in some text
+pub fn split_and_parse_front_matter<'data>(
+    source: Str<'data>,
+) -> (Option<FrontMatter>, Str<'data>) {
+    if let Some(m) = FRONTMATTER_RE.captures(source.as_str()) {
+        let g0 = m.get(0).unwrap();
+        if let Ok(front_matter) = serde_yaml::from_str(&m[1]) {
+            return (
+                Some(front_matter),
+                source.slice(g0.end(), source.as_str().len()),
+            );
+        }
+    }
+
+    (None, source)
+}
+
 /// A trailer is information that gets attached to the start tag when the end
 /// tag is emitted.
 ///
@@ -103,12 +121,23 @@ fn tag_supports_trailers(tag: Tag) -> bool {
         _ => false,
     }
 }
+// helper for table state
+pub struct TableState {
+    alignments: Vec<Alignment>,
+    cell_is_head: bool,
+    cell_index: usize,
+}
 
 /// Parses a string into an event stream with trailers.
 ///
 /// This is normally not used as the `parse` function will already buffer
 /// as necessary to automatically attach the trailers to the start tags.
-fn parse_with_trailers<'data>(
+///
+/// The output of this parsing function still largely reflects the cmark
+/// stream in structure though some elements are already resolved.  The
+/// main parse function however will attach some virtual elements such as
+/// table bodies which are not there in regular cmark.
+fn preliminary_parse_with_trailers<'data>(
     s: &'data str,
 ) -> impl Iterator<Item = (AnnotatedEvent, Option<Trailer<'data>>)> {
     let mut opts = cm::Options::empty();
@@ -122,6 +151,7 @@ fn parse_with_trailers<'data>(
     let mut tag_stack = vec![];
     let mut pending_role = None;
     let mut pending_trailer = None;
+    let mut table_state = None;
 
     iter::from_fn(move || {
         let mut trailer = None;
@@ -155,12 +185,31 @@ fn parse_with_trailers<'data>(
                         cm::Tag::CodeBlock(kind) => match kind {
                             cm::CodeBlockKind::Fenced(lang) => {
                                 let lang = Str::from_cm_str(lang);
-                                if let Some(m) = CODE_ROLE_RE.captures(lang.as_str()) {
+                                if let Some(m) = DIRECTIVE_RE.captures(lang.as_str()) {
                                     let g1 = m.get(1).unwrap();
-                                    let g2 = m.get(2).unwrap();
-                                    attrs.role = Some(lang.slice(g1.start(), g1.end()));
-                                    attrs.argument = Some(lang.slice(g2.start(), g2.end()));
-                                    Tag::Directive
+                                    let arg = if let Some(g2) = m.get(2) {
+                                        lang.slice(g2.start(), g2.end())
+                                    } else {
+                                        "".into()
+                                    };
+                                    let body = read_raw(&mut iter);
+                                    let (front_matter, body) = split_and_parse_front_matter(body);
+                                    return Some((
+                                        AnnotatedEvent::new_with_location(
+                                            Event::Directive(DirectiveEvent {
+                                                name: lang.slice(g1.start(), g1.end()),
+                                                argument: if arg.as_str().is_empty() {
+                                                    None
+                                                } else {
+                                                    Some(arg)
+                                                },
+                                                front_matter,
+                                                body,
+                                            }),
+                                            loc,
+                                        ),
+                                        None,
+                                    ));
                                 } else {
                                     let code = read_raw(&mut iter);
                                     return Some((
@@ -200,8 +249,8 @@ fn parse_with_trailers<'data>(
                             Tag::FootnoteDefinition
                         }
                         cm::Tag::Table(alignments) => {
-                            attrs.alignments = Some(
-                                alignments
+                            table_state = Some(TableState {
+                                alignments: alignments
                                     .into_iter()
                                     .map(|cm_align| match cm_align {
                                         cm::Alignment::None => Alignment::None,
@@ -210,12 +259,37 @@ fn parse_with_trailers<'data>(
                                         cm::Alignment::Right => Alignment::Right,
                                     })
                                     .collect(),
-                            );
+                                cell_is_head: false,
+                                cell_index: 0,
+                            });
                             Tag::Table
                         }
-                        cm::Tag::TableHead => Tag::TableHead,
-                        cm::Tag::TableRow => Tag::TableRow,
-                        cm::Tag::TableCell => Tag::TableCell,
+                        cm::Tag::TableHead => {
+                            let ref mut state = table_state.as_mut().expect("not in table");
+                            state.cell_index = 0;
+                            state.cell_is_head = true;
+                            Tag::TableHeader
+                        }
+                        cm::Tag::TableRow => {
+                            let ref mut state = table_state.as_mut().expect("not in table");
+                            state.cell_index = 0;
+                            state.cell_is_head = false;
+                            Tag::TableRow
+                        }
+                        cm::Tag::TableCell => {
+                            let ref mut state = table_state.as_mut().expect("not in table");
+                            attrs.alignment = state
+                                .alignments
+                                .get(state.cell_index)
+                                .copied()
+                                .unwrap_or(Alignment::None);
+                            state.cell_index += 1;
+                            if state.cell_is_head {
+                                Tag::TableHead
+                            } else {
+                                Tag::TableCell
+                            }
+                        }
                         cm::Tag::Emphasis => Tag::Emphasis,
                         cm::Tag::Strong => Tag::Strong,
                         cm::Tag::Strikethrough => Tag::Strikethrough,
@@ -379,7 +453,8 @@ where
 
 /// Parses structured cmark into an event stream.
 pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
-    let mut iter = parse_with_trailers(s);
+    let mut iter = preliminary_parse_with_trailers(s);
+
     iter::from_fn(move || {
         if let Some((event, _)) = iter.next() {
             if let &Event::StartTag(StartTagEvent { tag, .. }) = event.event() {
@@ -395,4 +470,29 @@ pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
         }
     })
     .flatten()
+    .flat_map(|event| match event.event() {
+        // after a table header we inject an implied table body.
+        Event::EndTag(EndTagEvent {
+            tag: Tag::TableHeader,
+        }) => Either::Left(
+            iter::once(event).chain(iter::once(
+                Event::StartTag(StartTagEvent {
+                    tag: Tag::TableBody,
+                    attrs: Default::default(),
+                })
+                .into(),
+            )),
+        ),
+        // just before the table end, we close the table body.
+        Event::EndTag(EndTagEvent { tag: Tag::Table }) => Either::Left(
+            iter::once(
+                Event::EndTag(EndTagEvent {
+                    tag: Tag::TableBody,
+                })
+                .into(),
+            )
+            .chain(iter::once(event)),
+        ),
+        _ => Either::Right(iter::once(event)),
+    })
 }

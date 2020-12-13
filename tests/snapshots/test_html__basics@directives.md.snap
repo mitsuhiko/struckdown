@@ -1,0 +1,17 @@
+---
+source: tests/test_html.rs
+expression: html
+input_file: tests/inputs/directives.md
+---
+<p>Example directive with nested parsing:</p>
+<div class="directive-video"><pre>Raw body content that goes with the directive.
+
+```{nested} nested-inline-argument
+This is an inline directive without front-matter arguments.
+```
+</pre></div><p>Invalid front matter:</p>
+<div class="directive-invalid"><pre>---
+[[[[
+---
+stuff
+</pre></div>

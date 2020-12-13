@@ -5,9 +5,8 @@ input_file: tests/inputs/role.md
 ---
 <p>This shows the use of <span class="role-role">roles</span> and <span class="role-role">roles</span>.</p>
 <p>Contrast this {with} <code>just some code</code>.</p>
-<pre><code>print(&quot;Hello World&quot;)
+<pre><code class="lang-python">print(&quot;Hello World&quot;)
 </code></pre><p>But this is a role:</p>
-<div>Hello
-</div>
-<p>StuffBarBaz</p>
+<div class="directive-role"><pre>Hello
+</pre></div><p>StuffBarBaz</p>
 

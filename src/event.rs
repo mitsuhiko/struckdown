@@ -7,6 +7,9 @@ use std::fmt::{self, Debug, Display};
 use pulldown_cmark as cm;
 use serde::{Deserialize, Serialize};
 
+/// Represents front-matter in directives.
+pub type FrontMatter = serde_yaml::Value;
+
 /// An internal string type.
 ///
 /// This is not so much a string type as a container holding different
@@ -186,7 +189,7 @@ impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
 }
 
 /// Alignment information.
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Alignment {
     /// Undefined alignment
@@ -197,6 +200,12 @@ pub enum Alignment {
     Center,
     /// Right aligned
     Right,
+}
+
+impl Default for Alignment {
+    fn default() -> Alignment {
+        Alignment::None
+    }
 }
 
 /// Tag type
@@ -229,11 +238,15 @@ pub enum Tag {
     FootnoteDefinition,
     /// `<table>` equivalent.
     Table,
-    /// `<thead>` equivalent (mandatory).
-    TableHead,
+    /// `<thead>` equivalent.
+    TableHeader,
+    /// `<tbody>` equivalent.
+    TableBody,
     /// `<tr>` equivalent.
     TableRow,
-    /// `<th>` / `<td>` equivalent depending on where.
+    /// `<th>` equivalent.
+    TableHead,
+    /// <td>` equivalent.
     TableCell,
     /// `<em>` equivalent.
     Emphasis,
@@ -243,26 +256,21 @@ pub enum Tag {
     Strikethrough,
     /// `<a>` equivalent.
     Link,
-    /// Unreplaced raw directive.
-    Directive,
+}
+
+fn is_default<T: Default + PartialEq>(v: &T) -> bool {
+    *v == T::default()
 }
 
 /// Attributes for tags.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Attrs<'data> {
-    /// A role determines for the processing system how to interpret
-    /// an element.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) role: Option<Str<'data>>,
-    /// The arguments for a code block or directive.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) argument: Option<Str<'data>>,
     /// Holds the start for a list.  
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) start: Option<u32>,
-    /// Holds the alignments for tables.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) alignments: Option<Vec<Alignment>>,
+    /// Alignment information
+    #[serde(skip_serializing_if = "is_default")]
+    pub(crate) alignment: Alignment,
     /// An optional id for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) id: Option<Str<'data>>,
@@ -280,24 +288,12 @@ pub struct Attrs<'data> {
 impl<'data> Attrs<'data> {
     /// Returns `true` if all attrs are empty.
     pub fn is_empty(&self) -> bool {
-        self.role.is_none()
-            && self.argument.is_none()
-            && self.start.is_none()
-            && self.alignments.is_none()
+        self.start.is_none()
+            && self.alignment == Alignment::None
             && self.id.is_none()
             && self.title.is_none()
             && self.target.is_none()
             && self.custom.is_none()
-    }
-
-    /// Returns the stored role.
-    pub fn role(&self) -> Option<&str> {
-        self.role.as_ref().map(|x| x.as_str())
-    }
-
-    /// Returns the argument to a code block or directive.
-    pub fn argument(&self) -> Option<&str> {
-        self.argument.as_ref().map(|x| x.as_str())
     }
 
     /// Returns the "start" information.
@@ -305,12 +301,9 @@ impl<'data> Attrs<'data> {
         self.start
     }
 
-    /// Returns the alignments.
-    pub fn alignments(&self) -> &[Alignment] {
-        match self.alignments {
-            None => &[],
-            Some(ref alignments) => &alignments[..],
-        }
+    /// Returns the alignment
+    pub fn alignment(&self) -> Alignment {
+        self.alignment
     }
 
     /// Returns the id
@@ -384,6 +377,19 @@ pub struct CodeBlockEvent<'data> {
     pub code: Str<'data>,
 }
 
+/// Directive block
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DirectiveEvent<'data> {
+    /// The role of the directive.
+    pub name: Str<'data>,
+    /// The optional argument of the directive.
+    pub argument: Option<Str<'data>>,
+    /// The front matter if available.
+    pub front_matter: Option<FrontMatter>,
+    /// The directive body.
+    pub body: Str<'data>,
+}
+
 /// Inline code
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InlineCodeEvent<'data> {
@@ -437,6 +443,7 @@ pub enum Event<'data> {
     Text(TextEvent<'data>),
     InterpretedText(InterpretedTextEvent<'data>),
     CodeBlock(CodeBlockEvent<'data>),
+    Directive(DirectiveEvent<'data>),
     InlineCode(InlineCodeEvent<'data>),
     Image(ImageEvent<'data>),
     RawHtml(RawHtmlEvent<'data>),

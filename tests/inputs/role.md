@@ -1,4 +1,4 @@
-This shows the use of {role}`roles` and {role}``roles``.
+This shows the use of {role}`roles` and {role}`roles`.
 
 Contrast this {with} `just some code`.
 

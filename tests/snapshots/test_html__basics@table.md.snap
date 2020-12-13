@@ -8,18 +8,20 @@ input_file: tests/inputs/table.md
 <th>b</th>
 <th>c</th>
 </thead>
-<tbody><tr><th>1</th>
-<th>2</th>
-<th>3</th>
+<tbody><tr><td>1</td>
+<td>2</td>
+<td>3</td>
 </tr>
-</tbody></table>
-<table><thead><th align=left>a</th>
-<th align=center>b</th>
-<th align=right>c</th>
+</tbody>
+</table>
+<table><thead><th style="text-align: left">a</th>
+<th style="text-align: center">b</th>
+<th style="text-align: right">c</th>
 </thead>
-<tbody><tr><th align=left>1</th>
-<th align=center>2</th>
-<th align=right>3</th>
+<tbody><tr><td style="text-align: left">1</td>
+<td style="text-align: center">2</td>
+<td style="text-align: right">3</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 
