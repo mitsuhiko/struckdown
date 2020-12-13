@@ -139,7 +139,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     }
 
     pub fn event(&mut self, event: &AnnotatedEvent<'data>) -> Result<(), io::Error> {
-        match *event.event() {
+        match event.event {
             Event::StartTag(StartTagEvent { tag, ref attrs }) => {
                 self.start_tag(tag, attrs)?;
             }

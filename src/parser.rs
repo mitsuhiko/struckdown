@@ -81,9 +81,7 @@ fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
 }
 
 /// parse front matter in some text
-pub fn split_and_parse_front_matter<'data>(
-    source: Str<'data>,
-) -> (Option<FrontMatter>, Str<'data>) {
+fn split_and_parse_front_matter<'data>(source: Str<'data>) -> (Option<FrontMatter>, Str<'data>) {
     if let Some(m) = FRONTMATTER_RE.captures(source.as_str()) {
         let g0 = m.get(0).unwrap();
         if let Ok(front_matter) = serde_yaml::from_str(&m[1]) {
@@ -122,7 +120,7 @@ fn tag_supports_trailers(tag: Tag) -> bool {
     }
 }
 // helper for table state
-pub struct TableState {
+struct TableState {
     alignments: Vec<Alignment>,
     cell_is_head: bool,
     cell_index: usize,
@@ -158,7 +156,7 @@ fn preliminary_parse_with_trailers<'data>(
 
         if let Some((event, range)) = iter.next() {
             // inefficient way to find the location
-            let mut loc = Location {
+            let mut location = Some(Location {
                 offset: range.start,
                 len: range.end - range.start,
                 line: s[..range.start].chars().filter(|&c| c == '\n').count() + 1,
@@ -166,10 +164,10 @@ fn preliminary_parse_with_trailers<'data>(
                     Some(nl) => range.start - nl - 1,
                     None => range.start,
                 },
-            };
+            });
 
             // simple events
-            let ty = match event {
+            let event = match event {
                 cm::Event::Start(cm_tag) => {
                     let mut attrs = Attrs::default();
                     let tag = match cm_tag {
@@ -195,8 +193,8 @@ fn preliminary_parse_with_trailers<'data>(
                                     let body = read_raw(&mut iter);
                                     let (front_matter, body) = split_and_parse_front_matter(body);
                                     return Some((
-                                        AnnotatedEvent::new_with_location(
-                                            Event::Directive(DirectiveEvent {
+                                        AnnotatedEvent {
+                                            event: Event::Directive(DirectiveEvent {
                                                 name: lang.slice(g1.start(), g1.end()),
                                                 argument: if arg.as_str().is_empty() {
                                                     None
@@ -206,20 +204,20 @@ fn preliminary_parse_with_trailers<'data>(
                                                 front_matter,
                                                 body,
                                             }),
-                                            loc,
-                                        ),
+                                            location,
+                                        },
                                         None,
                                     ));
                                 } else {
                                     let code = read_raw(&mut iter);
                                     return Some((
-                                        AnnotatedEvent::new_with_location(
-                                            Event::CodeBlock(CodeBlockEvent {
+                                        AnnotatedEvent {
+                                            event: Event::CodeBlock(CodeBlockEvent {
                                                 language: Some(lang),
                                                 code,
                                             }),
-                                            loc,
-                                        ),
+                                            location,
+                                        },
                                         None,
                                     ));
                                 }
@@ -227,13 +225,13 @@ fn preliminary_parse_with_trailers<'data>(
                             cm::CodeBlockKind::Indented => {
                                 let code = read_raw(&mut iter);
                                 return Some((
-                                    AnnotatedEvent::new_with_location(
-                                        Event::CodeBlock(CodeBlockEvent {
+                                    AnnotatedEvent {
+                                        event: Event::CodeBlock(CodeBlockEvent {
                                             language: None,
                                             code,
                                         }),
-                                        loc,
-                                    ),
+                                        location,
+                                    },
                                     None,
                                 ));
                             }
@@ -268,6 +266,10 @@ fn preliminary_parse_with_trailers<'data>(
                             let ref mut state = table_state.as_mut().expect("not in table");
                             state.cell_index = 0;
                             state.cell_is_head = true;
+                            // do not emit location information for table headers.  We consider
+                            // this to be a purely internal event same as with the table body
+                            // event emitted by the outer parse function.
+                            location = None;
                             Tag::TableHeader
                         }
                         cm::Tag::TableRow => {
@@ -306,8 +308,8 @@ fn preliminary_parse_with_trailers<'data>(
                             // nested text.
                             let alt = read_raw(&mut iter);
                             return Some((
-                                AnnotatedEvent::new_with_location(
-                                    Event::Image(ImageEvent {
+                                AnnotatedEvent {
+                                    event: Event::Image(ImageEvent {
                                         target: Str::from_cm_str(target),
                                         alt: if alt.as_str().is_empty() {
                                             None
@@ -320,8 +322,8 @@ fn preliminary_parse_with_trailers<'data>(
                                             Some(Str::from_cm_str(title))
                                         },
                                     }),
-                                    loc,
-                                ),
+                                    location,
+                                },
                                 None,
                             ));
                         }
@@ -346,7 +348,9 @@ fn preliminary_parse_with_trailers<'data>(
 
                             // adjust the span of the text to not include the role.
                             let column_adjustment = g0.end() - g0.start();
-                            loc.len -= column_adjustment;
+                            if let Some(ref mut location) = location {
+                                location.len -= column_adjustment;
+                            }
                             pending_role =
                                 Some((text.slice(g1.start(), g1.end()), column_adjustment));
                             text = text.slice(0, g0.start());
@@ -361,7 +365,9 @@ fn preliminary_parse_with_trailers<'data>(
 
                             // adjust the span of the text to not include the role.
                             let column_adjustment = g0.end() - g0.start();
-                            loc.len -= column_adjustment;
+                            if let Some(ref mut location) = location {
+                                location.len -= column_adjustment;
+                            }
                             pending_trailer = Some(Trailer::Id(text.slice(g1.start(), g1.end())));
                             text = text.slice(0, g0.start());
                         }
@@ -373,9 +379,11 @@ fn preliminary_parse_with_trailers<'data>(
                     // if there is a pending role then we're not working with a
                     // code block, but an interpreted text one.
                     if let Some((role, column_adjustment)) = pending_role.take() {
-                        loc.column -= column_adjustment;
-                        loc.offset -= column_adjustment;
-                        loc.len += column_adjustment;
+                        if let Some(ref mut location) = location {
+                            location.column -= column_adjustment;
+                            location.offset -= column_adjustment;
+                            location.len += column_adjustment;
+                        }
                         Event::InterpretedText(InterpretedTextEvent {
                             text: Str::from_cm_str(value),
                             role: role.into(),
@@ -400,7 +408,7 @@ fn preliminary_parse_with_trailers<'data>(
                 cm::Event::TaskListMarker(checked) => Event::Checkbox(CheckboxEvent { checked }),
             };
 
-            Some((AnnotatedEvent::new_with_location(ty, loc), trailer))
+            Some((AnnotatedEvent { event, location }, trailer))
         } else {
             None
         }
@@ -420,8 +428,8 @@ where
 
     while let Some((event, trailer)) = iter.next() {
         // keep track of the tag depth
-        match event.event() {
-            &Event::StartTag(StartTagEvent { tag, .. }) => {
+        match event.event {
+            Event::StartTag(StartTagEvent { tag, .. }) => {
                 if tag_supports_trailers(tag) {
                     buffer.extend(buffer_for_trailers(event, iter));
                     continue;
@@ -429,14 +437,14 @@ where
                     depth += 1;
                 }
             }
-            &Event::EndTag { .. } => depth -= 1,
+            Event::EndTag { .. } => depth -= 1,
             _ => {}
         }
         buffer.push(event);
 
         // attach an end tag trailer to the start tag if needed.
         if depth == 0 {
-            if let Event::StartTag(StartTagEvent { attrs, .. }) = buffer[0].event_mut() {
+            if let Event::StartTag(StartTagEvent { ref mut attrs, .. }) = buffer[0].event {
                 match trailer {
                     Some(Trailer::Id(new_id)) => {
                         attrs.id = Some(new_id);
@@ -452,30 +460,40 @@ where
 }
 
 /// Parses structured cmark into an event stream.
+///
+/// The given structured cmark input will be parsed into a well formed event
+/// stream.  Events are wrapped in the [`AnnotatedEvent`] struct which provides
+/// appropriate location information.
+///
+/// Note that even without any further processing not all events that come out
+/// of a markdown document will have a location information set.  For instance
+/// tables produce a [`Tag::TableHeader`] and [`Tag::TableBody`] wrapper which
+/// does not exist as such in the source.  Both of those will not have a location
+/// attached.
 pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
     let mut iter = preliminary_parse_with_trailers(s);
 
     iter::from_fn(move || {
-        if let Some((event, _)) = iter.next() {
-            if let &Event::StartTag(StartTagEvent { tag, .. }) = event.event() {
+        if let Some((annotated_event, _)) = iter.next() {
+            if let Event::StartTag(StartTagEvent { tag, .. }) = annotated_event.event {
                 if tag_supports_trailers(tag) {
                     return Some(Either::Left(
-                        buffer_for_trailers(event, &mut iter).into_iter(),
+                        buffer_for_trailers(annotated_event, &mut iter).into_iter(),
                     ));
                 }
             }
-            Some(Either::Right(iter::once(event)))
+            Some(Either::Right(iter::once(annotated_event)))
         } else {
             None
         }
     })
     .flatten()
-    .flat_map(|event| match event.event() {
+    .flat_map(|annotated_event| match annotated_event.event {
         // after a table header we inject an implied table body.
         Event::EndTag(EndTagEvent {
             tag: Tag::TableHeader,
         }) => Either::Left(
-            iter::once(event).chain(iter::once(
+            iter::once(annotated_event).chain(iter::once(
                 Event::StartTag(StartTagEvent {
                     tag: Tag::TableBody,
                     attrs: Default::default(),
@@ -491,8 +509,8 @@ pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
                 })
                 .into(),
             )
-            .chain(iter::once(event)),
+            .chain(iter::once(annotated_event)),
         ),
-        _ => Either::Right(iter::once(event)),
+        _ => Either::Right(iter::once(annotated_event)),
     })
 }

@@ -3,9 +3,13 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::convert::TryInto;
 use std::fmt::{self, Debug, Display};
+use std::marker::PhantomData;
 
 use pulldown_cmark as cm;
-use serde::{Deserialize, Serialize};
+use serde::de::value::{MapAccessDeserializer, SeqAccessDeserializer};
+use serde::de::{MapAccess, SeqAccess, Visitor};
+use serde::ser::SerializeTuple;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Represents front-matter in directives.
 pub type FrontMatter = serde_yaml::Value;
@@ -27,7 +31,7 @@ pub struct Str<'data> {
 impl<'data> Serialize for Str<'data> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: Serializer,
     {
         serializer.serialize_str(self.as_str())
     }
@@ -36,7 +40,7 @@ impl<'data> Serialize for Str<'data> {
 impl<'data, 'de> Deserialize<'de> for Str<'data> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: Deserializer<'de>,
     {
         let cow = Cow::<'data, str>::deserialize(deserializer)?;
         Ok(cow.into())
@@ -147,44 +151,72 @@ pub struct Location {
 /// An annotated event is generally the same as an [`Event`] but it contains
 /// optional annotations.  Annotations are generally just the location information
 /// about where the event ocurred in the original source document.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AnnotatedEvent<'data>(Event<'data>, Option<Location>);
-
-impl<'data> AnnotatedEvent<'data> {
-    /// Creates an annotated event with location.
-    pub fn new_with_location(event: Event<'data>, loc: Location) -> AnnotatedEvent<'data> {
-        AnnotatedEvent(event, Some(loc))
-    }
-
-    /// Returns the embedded event.
-    pub fn event(&self) -> &Event<'data> {
-        &self.0
-    }
-
-    /// Mutable access to the event.
-    pub fn event_mut(&mut self) -> &mut Event<'data> {
-        &mut self.0
-    }
-
-    /// Returns the annotated location.
-    pub fn location(&self) -> Option<&Location> {
-        self.1.as_ref()
-    }
-
-    /// Sets a new location replacing the old.
-    pub fn set_location(&mut self, location: Option<Location>) {
-        self.1 = location;
-    }
-
-    /// Extracts the embedded event.
-    pub fn into_event(self) -> Event<'data> {
-        self.0
+#[derive(Debug)]
+pub struct AnnotatedEvent<'data> {
+    pub event: Event<'data>,
+    pub location: Option<Location>,
+}
+impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
+    fn from(event: Event<'data>) -> AnnotatedEvent<'data> {
+        AnnotatedEvent {
+            event,
+            location: None,
+        }
     }
 }
 
-impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
-    fn from(event: Event<'data>) -> AnnotatedEvent<'data> {
-        AnnotatedEvent(event, None)
+impl<'data> Serialize for AnnotatedEvent<'data> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(ref location) = self.location {
+            let mut s = serializer.serialize_tuple(2)?;
+            s.serialize_element(&self.event)?;
+            s.serialize_element(location)?;
+            s.end()
+        } else {
+            self.event.serialize(serializer)
+        }
+    }
+}
+
+impl<'de, 'data> Deserialize<'de> for AnnotatedEvent<'data> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ArrayOrStruct<'data>(PhantomData<AnnotatedEvent<'data>>);
+
+        impl<'de, 'data> Visitor<'de> for ArrayOrStruct<'data> {
+            type Value = AnnotatedEvent<'data>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("array or map")
+            }
+
+            fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: SeqAccess<'de>,
+            {
+                Deserialize::deserialize(SeqAccessDeserializer::new(seq))
+                    .map(|(event, location)| AnnotatedEvent { event, location })
+            }
+
+            fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                Deserialize::deserialize(MapAccessDeserializer::new(map)).map(|event| {
+                    AnnotatedEvent {
+                        event,
+                        location: None,
+                    }
+                })
+            }
+        }
+
+        deserializer.deserialize_any(ArrayOrStruct(PhantomData))
     }
 }
 
