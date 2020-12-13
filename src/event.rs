@@ -299,22 +299,22 @@ fn is_default<T: Default + PartialEq>(v: &T) -> bool {
 pub struct Attrs<'data> {
     /// Holds the start for a list.  
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) start: Option<u32>,
+    pub start: Option<u32>,
     /// Alignment information
     #[serde(skip_serializing_if = "is_default")]
-    pub(crate) alignment: Alignment,
+    pub alignment: Alignment,
     /// An optional id for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) id: Option<Str<'data>>,
+    pub id: Option<Str<'data>>,
     /// An optional title for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) title: Option<Str<'data>>,
+    pub title: Option<Str<'data>>,
     /// Link reference target.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) target: Option<Str<'data>>,
+    pub target: Option<Str<'data>>,
     /// Custom attributes.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) custom: Option<BTreeMap<Cow<'static, str>, Str<'data>>>,
+    pub custom: Option<BTreeMap<Cow<'static, str>, Str<'data>>>,
 }
 
 impl<'data> Attrs<'data> {
@@ -326,46 +326,6 @@ impl<'data> Attrs<'data> {
             && self.title.is_none()
             && self.target.is_none()
             && self.custom.is_none()
-    }
-
-    /// Returns the "start" information.
-    pub fn start(&self) -> Option<u32> {
-        self.start
-    }
-
-    /// Returns the alignment
-    pub fn alignment(&self) -> Alignment {
-        self.alignment
-    }
-
-    /// Returns the id
-    pub fn id(&self) -> Option<&str> {
-        self.id.as_ref().map(|x| x.as_str())
-    }
-
-    /// Returns the title
-    pub fn title(&self) -> Option<&str> {
-        self.title.as_ref().map(|x| x.as_str())
-    }
-
-    /// Returns the target
-    pub fn target(&self) -> Option<&str> {
-        self.target.as_ref().map(|x| x.as_str())
-    }
-
-    /// Returns a custom attribute.
-    pub fn get_custom(&self, key: &str) -> Option<&str> {
-        match self.custom {
-            Some(ref map) => map.get(key).map(|x| x.as_str()),
-            None => None,
-        }
-    }
-
-    /// Iter over custom attributes.
-    pub fn iter_custom(&self) -> impl Iterator<Item = (&str, &Str<'data>)> {
-        self.custom
-            .iter()
-            .flat_map(|attrs| attrs.iter().map(|(k, v)| (&**k, v)))
     }
 }
 

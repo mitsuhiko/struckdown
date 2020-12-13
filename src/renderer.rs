@@ -80,7 +80,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         let html_tag = self.tag_to_html_tag(tag);
         write!(self.out, "<{}", html_tag)?;
 
-        match attrs.start() {
+        match attrs.start {
             None | Some(1) => {}
             Some(start) => {
                 write!(self.out, " start={}", start)?;
@@ -88,31 +88,33 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         }
 
         let mut combined_style = String::new();
-        if let Some(id) = attrs.id() {
-            write!(self.out, " id=\"{}\"", id)?;
+        if let Some(ref id) = attrs.id {
+            write!(self.out, " id=\"{}\"", escape(id.as_str()))?;
         }
-        if let Some(title) = attrs.title() {
-            write!(self.out, " title=\"{}\"", title)?;
+        if let Some(ref title) = attrs.title {
+            write!(self.out, " title=\"{}\"", escape(title.as_str()))?;
         }
-        if let Some(target) = attrs.target() {
-            write!(self.out, " href=\"{}\"", escape(target))?;
+        if let Some(ref target) = attrs.target {
+            write!(self.out, " href=\"{}\"", escape(target.as_str()))?;
         }
 
-        combined_style.push_str(match attrs.alignment() {
+        combined_style.push_str(match attrs.alignment {
             Alignment::None => "",
             Alignment::Left => "text-align: left",
             Alignment::Center => "text-align: center",
             Alignment::Right => "text-align: right",
         });
 
-        for (key, value) in attrs.iter_custom() {
-            if key == "style" {
-                if !combined_style.is_empty() {
-                    combined_style.push_str("; ");
+        if let Some(ref custom) = attrs.custom {
+            for (key, value) in custom.iter() {
+                if key == "style" {
+                    if !combined_style.is_empty() {
+                        combined_style.push_str("; ");
+                    }
+                    combined_style.push_str(value.as_str());
+                } else {
+                    write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
                 }
-                combined_style.push_str(value.as_str());
-            } else {
-                write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
             }
         }
 
