@@ -304,7 +304,7 @@ pub struct Attrs<'data> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<u32>,
     /// Alignment information
-    #[serde(skip_serializing_if = "is_default")]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub alignment: Alignment,
     /// An optional id for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -345,7 +345,7 @@ pub struct StartTagEvent<'data> {
     /// The tag that was started by this event.
     pub tag: Tag,
     /// Attached attributes to this event.
-    #[serde(skip_serializing_if = "Attrs::is_empty")]
+    #[serde(default, skip_serializing_if = "Attrs::is_empty")]
     pub attrs: Attrs<'data>,
 }
 
