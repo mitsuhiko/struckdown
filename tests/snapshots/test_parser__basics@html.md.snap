@@ -3,6 +3,7 @@ source: tests/test_parser.rs
 expression: events
 input_file: tests/inputs/html.md
 ---
+- type: document_start
 - - type: start_tag
     tag: paragraph
   - offset: 0

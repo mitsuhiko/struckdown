@@ -332,6 +332,13 @@ impl<'data> Attrs<'data> {
     }
 }
 
+/// Emitted at the start of a document.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocumentStartEvent {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub front_matter: Option<FrontMatter>,
+}
+
 /// Emitted when a tag starts.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StartTagEvent<'data> {
@@ -433,6 +440,7 @@ pub struct FootnoteReferenceEvent<'data> {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Event<'data> {
+    DocumentStart(DocumentStartEvent),
     StartTag(StartTagEvent<'data>),
     EndTag(EndTagEvent),
     Text(TextEvent<'data>),

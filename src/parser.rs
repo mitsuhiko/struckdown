@@ -8,16 +8,17 @@ use pulldown_cmark as cm;
 use regex::Regex;
 
 use crate::event::{
-    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent, EndTagEvent,
-    Event, FootnoteReferenceEvent, FrontMatter, ImageEvent, InlineCodeEvent, InterpretedTextEvent,
-    Location, RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
+    Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent,
+    DocumentStartEvent, EndTagEvent, Event, FootnoteReferenceEvent, FrontMatter, ImageEvent,
+    InlineCodeEvent, InterpretedTextEvent, Location, RawHtmlEvent, StartTagEvent, Str, Tag,
+    TextEvent,
 };
 
 lazy_static! {
     static ref TEXT_ROLE_RE: Regex = Regex::new(r"\{([^\r\n\}]+)\}$").unwrap();
     static ref DIRECTIVE_RE: Regex = Regex::new(r"^\{([^\r\n\}]+)\}(?:\s+(.*?))?$").unwrap();
     static ref HEADING_ID_RE: Regex = Regex::new(r"\s+\{#([^\r\n\}]+)\}\s*$").unwrap();
-    static ref FRONTMATTER_RE: Regex = Regex::new(r"(?sm)^---\s*$(.*?)^---\s*$\r?\n?").unwrap();
+    static ref FRONTMATTER_RE: Regex = Regex::new(r"(?sm)\A---\s*$(.*?)^---\s*$\r?\n?").unwrap();
 }
 
 /// Reads until the end of a tag and read embedded content as raw string.
@@ -472,46 +473,70 @@ where
 /// does not exist as such in the source.  Both of those will not have a location
 /// attached.
 pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
+    let mut front_matter = None;
+    let mut s = s;
+    let mut front_matter_location = None;
+
+    if let Some(m) = FRONTMATTER_RE.captures(s) {
+        if let Ok(parsed_front_matter) = serde_yaml::from_str(&m[1]) {
+            let g0 = m.get(0).unwrap();
+            front_matter = Some(parsed_front_matter);
+            front_matter_location = Some(Location {
+                offset: 0,
+                len: g0.end(),
+                line: 1,
+                column: 0,
+            });
+            s = &s[g0.end()..];
+        }
+    }
+
     let mut iter = preliminary_parse_with_trailers(s);
 
-    iter::from_fn(move || {
-        if let Some((annotated_event, _)) = iter.next() {
-            if let Event::StartTag(StartTagEvent { tag, .. }) = annotated_event.event {
-                if tag_supports_trailers(tag) {
-                    return Some(Either::Left(
-                        buffer_for_trailers(annotated_event, &mut iter).into_iter(),
-                    ));
+    iter::once(AnnotatedEvent {
+        event: Event::DocumentStart(DocumentStartEvent { front_matter }),
+        location: front_matter_location,
+    })
+    .chain(
+        iter::from_fn(move || {
+            if let Some((annotated_event, _)) = iter.next() {
+                if let Event::StartTag(StartTagEvent { tag, .. }) = annotated_event.event {
+                    if tag_supports_trailers(tag) {
+                        return Some(Either::Left(
+                            buffer_for_trailers(annotated_event, &mut iter).into_iter(),
+                        ));
+                    }
                 }
+                Some(Either::Right(iter::once(annotated_event)))
+            } else {
+                None
             }
-            Some(Either::Right(iter::once(annotated_event)))
-        } else {
-            None
-        }
-    })
-    .flatten()
-    .flat_map(|annotated_event| match annotated_event.event {
-        // after a table header we inject an implied table body.
-        Event::EndTag(EndTagEvent {
-            tag: Tag::TableHeader,
-        }) => Either::Left(
-            iter::once(annotated_event).chain(iter::once(
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::TableBody,
-                    attrs: Default::default(),
-                })
-                .into(),
-            )),
-        ),
-        // just before the table end, we close the table body.
-        Event::EndTag(EndTagEvent { tag: Tag::Table }) => Either::Left(
-            iter::once(
-                Event::EndTag(EndTagEvent {
-                    tag: Tag::TableBody,
-                })
-                .into(),
-            )
-            .chain(iter::once(annotated_event)),
-        ),
-        _ => Either::Right(iter::once(annotated_event)),
-    })
+        })
+        .flatten()
+        .flat_map(|annotated_event| match annotated_event.event {
+            // after a table header we inject an implied table body.
+            Event::EndTag(EndTagEvent {
+                tag: Tag::TableHeader,
+            }) => Either::Left(
+                iter::once(annotated_event).chain(iter::once(
+                    Event::StartTag(StartTagEvent {
+                        tag: Tag::TableBody,
+                        attrs: Default::default(),
+                    })
+                    .into(),
+                )),
+            ),
+            // just before the table end, we close the table body.
+            Event::EndTag(EndTagEvent { tag: Tag::Table }) => Either::Left(
+                iter::once(
+                    Event::EndTag(EndTagEvent {
+                        tag: Tag::TableBody,
+                    })
+                    .into(),
+                )
+                .chain(iter::once(annotated_event)),
+            ),
+            _ => Either::Right(iter::once(annotated_event)),
+        }),
+    )
 }
