@@ -300,6 +300,25 @@ pub enum Tag {
     Link,
 }
 
+impl Tag {
+    /// Returns the header level for the tag if the tag represents a header.
+    ///
+    /// This is useful because headers are represented by multiple
+    /// distinct tags and this avoids having to match on multiple
+    /// enum values.
+    pub fn header_level(self) -> Option<usize> {
+        match self {
+            Tag::Heading1 => Some(1),
+            Tag::Heading2 => Some(2),
+            Tag::Heading3 => Some(3),
+            Tag::Heading4 => Some(4),
+            Tag::Heading5 => Some(5),
+            Tag::Heading6 => Some(6),
+            _ => None,
+        }
+    }
+}
+
 fn is_default<T: Default + PartialEq>(v: &T) -> bool {
     *v == T::default()
 }

@@ -3,34 +3,22 @@ use std::fs;
 use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event};
 use struckdown::html::to_html;
 use struckdown::parser::parse;
-use struckdown::processors;
+use struckdown::pipeline::Pipeline;
+use struckdown::processors::BuiltinProcessor;
 
 use itertools::Either;
-
-use serde::Deserialize;
-
-#[derive(Debug, Deserialize)]
-#[serde(tag = "processor")]
-pub enum Processor {
-    AutoAnchors(processors::AutoAnchorsOptions),
-}
 
 fn apply_configured_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
     processors: Vec<serde_yaml::Value>,
     iter: I,
 ) -> impl Iterator<Item = AnnotatedEvent<'data>> {
-    let mut iter = Box::new(iter) as Box<dyn Iterator<Item = AnnotatedEvent<'data>>>;
+    let mut pipeline = Pipeline::new();
 
     for processor in processors {
-        let processor: Processor = serde_yaml::from_value(processor).unwrap();
-        match processor {
-            Processor::AutoAnchors(options) => {
-                iter = Box::new(processors::AutoAnchors::new_with_options(iter, options));
-            }
-        }
+        pipeline.add_processor(serde_yaml::from_value::<BuiltinProcessor>(processor).unwrap());
     }
 
-    return iter;
+    pipeline.apply(Box::new(iter))
 }
 
 fn apply_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(

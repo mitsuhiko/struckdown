@@ -1,57 +1,65 @@
 use serde::{Deserialize, Serialize};
 use slug::slugify;
+use std::borrow::Cow;
 use std::collections::VecDeque;
 
-use crate::event::{AnnotatedEvent, Event, StartTagEvent, Tag};
+use crate::event::{AnnotatedEvent, Event, StartTagEvent};
+use crate::processors::Processor;
 
-/// Configuration options for the [`AutoAnchors`] processor.
-#[derive(Debug, Serialize, Deserialize)]
+/// Automatically add anchors to all headers when missing.
+///
+/// When applied this wraps the stream in a [`AutoAnchorsIter`].
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(default)]
-pub struct AutoAnchorsOptions {
+pub struct AutoAnchors {
     /// The maximum level of headline that should get IDs.
     pub max_level: usize,
 }
 
-impl Default for AutoAnchorsOptions {
-    fn default() -> AutoAnchorsOptions {
-        AutoAnchorsOptions { max_level: 6 }
+impl Default for AutoAnchors {
+    fn default() -> AutoAnchors {
+        AutoAnchors { max_level: 6 }
     }
 }
 
-/// Adds anchors to all headers if missing.
-pub struct AutoAnchors<'data, I> {
+impl Processor for AutoAnchors {
+    fn apply<'data>(
+        self: Box<Self>,
+        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
+    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
+        Box::new(AutoAnchorsIter::new(iter, Cow::Owned(*self)))
+    }
+
+    fn apply_ref<'data, 'options: 'data>(
+        &'options self,
+        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
+    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
+        Box::new(AutoAnchorsIter::new(iter, Cow::Borrowed(self)))
+    }
+}
+
+/// The iterator implementing [`AutoAnchors`].
+pub struct AutoAnchorsIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> {
     source: I,
     buffer: VecDeque<AnnotatedEvent<'data>>,
-    options: AutoAnchorsOptions,
+    options: Cow<'options, AutoAnchors>,
 }
 
-impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> AutoAnchors<'data, I> {
-    /// Creates a new auto anchor stream processor with default options.
-    pub fn new(iterator: I) -> Self {
-        Self::new_with_options(iterator, AutoAnchorsOptions::default())
-    }
-
-    /// Creates a new auto anchor stream processor with specific options.
-    pub fn new_with_options(iterator: I, options: AutoAnchorsOptions) -> Self {
+impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>>
+    AutoAnchorsIter<'data, 'options, I>
+{
+    pub fn new(iterator: I, options: Cow<'options, AutoAnchors>) -> Self {
         Self {
             source: iterator,
             buffer: VecDeque::new(),
             options,
         }
     }
-
-    /// Read only reference to the options.
-    pub fn options(&self) -> &AutoAnchorsOptions {
-        &self.options
-    }
-
-    /// Writable reference to the options.
-    pub fn options_mut(&mut self) -> &mut AutoAnchorsOptions {
-        &mut self.options
-    }
 }
 
-impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator for AutoAnchors<'data, I> {
+impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
+    for AutoAnchorsIter<'data, 'options, I>
+{
     type Item = AnnotatedEvent<'data>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -61,30 +69,13 @@ impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator for AutoAnchors<
 
         self.source.next().map(|mut annotated_event| {
             let (header_level, attrs) = match annotated_event.event {
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading1,
-                    ref mut attrs,
-                }) => (1, attrs),
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading2,
-                    ref mut attrs,
-                }) => (2, attrs),
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading3,
-                    ref mut attrs,
-                }) => (3, attrs),
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading4,
-                    ref mut attrs,
-                }) => (4, attrs),
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading5,
-                    ref mut attrs,
-                }) => (5, attrs),
-                Event::StartTag(StartTagEvent {
-                    tag: Tag::Heading6,
-                    ref mut attrs,
-                }) => (6, attrs),
+                Event::StartTag(StartTagEvent { tag, ref mut attrs }) => {
+                    if let Some(header_level) = tag.header_level() {
+                        (header_level, attrs)
+                    } else {
+                        return annotated_event;
+                    }
+                }
                 _ => return annotated_event,
             };
 

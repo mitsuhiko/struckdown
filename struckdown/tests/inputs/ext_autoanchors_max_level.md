@@ -12,6 +12,6 @@ Text 1
 
 Text 2
 
-### Heading 3
+### Heading _3_
 
 Text 3

@@ -1,0 +1,7 @@
+---
+source: struckdown/src/pipeline.rs
+expression: "to_html(pipeline.parse_and_process(\"# Hello World!\\nAha\"))"
+---
+<h1 id="hello-world">Hello World!</h1>
+<p>Aha</p>
+

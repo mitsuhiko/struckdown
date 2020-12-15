@@ -91,36 +91,54 @@ input_file: struckdown/tests/inputs/ext_autoanchors_max_level.md
 - - type: start_tag
     tag: heading3
   - offset: 56
-    len: 14
+    len: 16
     line: 9
     column: 0
 - - type: text
-    text: Heading 3
+    text: "Heading "
   - offset: 60
-    len: 9
+    len: 8
     line: 9
     column: 4
+- - type: start_tag
+    tag: emphasis
+  - offset: 68
+    len: 3
+    line: 9
+    column: 12
+- - type: text
+    text: "3"
+  - offset: 69
+    len: 1
+    line: 9
+    column: 13
+- - type: end_tag
+    tag: emphasis
+  - offset: 68
+    len: 3
+    line: 9
+    column: 12
 - - type: end_tag
     tag: heading3
   - offset: 56
-    len: 14
+    len: 16
     line: 9
     column: 0
 - - type: start_tag
     tag: paragraph
-  - offset: 71
+  - offset: 73
     len: 7
     line: 11
     column: 0
 - - type: text
     text: Text 3
-  - offset: 71
+  - offset: 73
     len: 6
     line: 11
     column: 0
 - - type: end_tag
     tag: paragraph
-  - offset: 71
+  - offset: 73
     len: 7
     line: 11
     column: 0

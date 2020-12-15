@@ -6,4 +6,5 @@
 pub mod event;
 pub mod html;
 pub mod parser;
+pub mod pipeline;
 pub mod processors;
