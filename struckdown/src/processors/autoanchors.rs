@@ -1,32 +1,53 @@
+use serde::{Deserialize, Serialize};
 use slug::slugify;
 use std::collections::VecDeque;
 
 use crate::event::{AnnotatedEvent, Event, StartTagEvent, Tag};
 
+/// Configuration options for the [`AutoAnchors`] processor.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct AutoAnchorsOptions {
+    /// The maximum level of headline that should get IDs.
+    pub max_level: usize,
+}
+
+impl Default for AutoAnchorsOptions {
+    fn default() -> AutoAnchorsOptions {
+        AutoAnchorsOptions { max_level: 6 }
+    }
+}
+
 /// Adds anchors to all headers if missing.
 pub struct AutoAnchors<'data, I> {
     source: I,
     buffer: VecDeque<AnnotatedEvent<'data>>,
-    min_level: usize,
+    options: AutoAnchorsOptions,
 }
 
 impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> AutoAnchors<'data, I> {
-    /// Creates a new auto anchor stream processor.
-    ///
-    /// This sets the default minimum level to 6 which means that all headers
-    /// will get an ID added.  This minimum level can be reconfigured by using
-    /// the [`AutoAnchors::set_min_level`] method.
+    /// Creates a new auto anchor stream processor with default options.
     pub fn new(iterator: I) -> Self {
+        Self::new_with_options(iterator, AutoAnchorsOptions::default())
+    }
+
+    /// Creates a new auto anchor stream processor with specific options.
+    pub fn new_with_options(iterator: I, options: AutoAnchorsOptions) -> Self {
         Self {
             source: iterator,
             buffer: VecDeque::new(),
-            min_level: 6,
+            options,
         }
     }
 
-    /// Overrides the minimum level that should get IDs
-    pub fn set_min_level(&mut self, min_level: usize) {
-        self.min_level = min_level;
+    /// Read only reference to the options.
+    pub fn options(&self) -> &AutoAnchorsOptions {
+        &self.options
+    }
+
+    /// Writable reference to the options.
+    pub fn options_mut(&mut self) -> &mut AutoAnchorsOptions {
+        &mut self.options
     }
 }
 
@@ -67,7 +88,7 @@ impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator for AutoAnchors<
                 _ => return annotated_event,
             };
 
-            if attrs.id.is_some() || header_level > self.min_level {
+            if attrs.id.is_some() || header_level > self.options.max_level {
                 return annotated_event;
             }
 

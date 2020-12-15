@@ -7,24 +7,33 @@ use struckdown::processors;
 
 use itertools::Either;
 
-fn apply_configured_extensions<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
-    extensions: Vec<String>,
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+#[serde(tag = "processor")]
+pub enum Processor {
+    AutoAnchors(processors::AutoAnchorsOptions),
+}
+
+fn apply_configured_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
+    processors: Vec<serde_yaml::Value>,
     iter: I,
 ) -> impl Iterator<Item = AnnotatedEvent<'data>> {
     let mut iter = Box::new(iter) as Box<dyn Iterator<Item = AnnotatedEvent<'data>>>;
 
-    for extension in extensions {
-        if extension == "AutoAnchors" {
-            iter = Box::new(processors::AutoAnchors::new(iter));
-        } else {
-            panic!("unknown extension {}", extension);
+    for processor in processors {
+        let processor: Processor = serde_yaml::from_value(processor).unwrap();
+        match processor {
+            Processor::AutoAnchors(options) => {
+                iter = Box::new(processors::AutoAnchors::new_with_options(iter, options));
+            }
         }
     }
 
     return iter;
 }
 
-fn apply_extensions<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
+fn apply_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
     iter: I,
 ) -> impl Iterator<Item = AnnotatedEvent<'data>> {
     let mut iter = iter.peekable();
@@ -34,14 +43,11 @@ fn apply_extensions<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
             Event::DocumentStart(DocumentStartEvent {
                 front_matter: Some(ref front_matter),
             }) => {
-                if let Some(extensions) =
-                    front_matter.get("extensions").and_then(|x| x.as_sequence())
+                if let Some(processors) =
+                    front_matter.get("processors").and_then(|x| x.as_sequence())
                 {
-                    return Either::Left(apply_configured_extensions(
-                        extensions
-                            .iter()
-                            .map(|x| x.as_str().unwrap().to_owned())
-                            .collect(),
+                    return Either::Left(apply_configured_processors(
+                        processors.iter().map(|x| x.clone()).collect(),
                         iter,
                     ));
                 }
@@ -57,7 +63,7 @@ fn apply_extensions<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
 fn test_parser() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
-        let events: Vec<_> = apply_extensions(parse(&source)).collect();
+        let events: Vec<_> = apply_processors(parse(&source)).collect();
         insta::assert_yaml_snapshot!(events);
     });
 }
@@ -66,7 +72,7 @@ fn test_parser() {
 fn test_html() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
-        let html = to_html(apply_extensions(parse(&source)));
+        let html = to_html(apply_processors(parse(&source)));
         insta::assert_snapshot!(html);
     });
 }

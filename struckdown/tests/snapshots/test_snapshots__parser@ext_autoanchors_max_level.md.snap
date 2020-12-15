@@ -1,14 +1,15 @@
 ---
 source: struckdown/tests/test_snapshots.rs
 expression: events
-input_file: struckdown/tests/inputs/ext_autoanchors.md
+input_file: struckdown/tests/inputs/ext_autoanchors_max_level.md
 ---
 - - type: document_start
     front_matter:
       processors:
         - processor: AutoAnchors
+          max_level: 1
   - offset: 0
-    len: 48
+    len: 65
     line: 1
     column: 0
 - - type: start_tag
@@ -50,78 +51,76 @@ input_file: struckdown/tests/inputs/ext_autoanchors.md
     line: 3
     column: 0
 - - type: start_tag
-    tag: heading1
+    tag: heading2
     attrs:
       id: manual-id
   - offset: 21
-    len: 25
+    len: 26
     line: 5
     column: 0
 - - type: text
     text: Heading 2
-  - offset: 23
+  - offset: 24
     len: 9
     line: 5
-    column: 2
+    column: 3
 - - type: end_tag
-    tag: heading1
+    tag: heading2
   - offset: 21
-    len: 25
+    len: 26
     line: 5
     column: 0
 - - type: start_tag
     tag: paragraph
-  - offset: 47
+  - offset: 48
     len: 7
     line: 7
     column: 0
 - - type: text
     text: Text 2
-  - offset: 47
+  - offset: 48
     len: 6
     line: 7
     column: 0
 - - type: end_tag
     tag: paragraph
-  - offset: 47
+  - offset: 48
     len: 7
     line: 7
     column: 0
 - - type: start_tag
-    tag: heading1
-    attrs:
-      id: heading-3
-  - offset: 55
-    len: 12
+    tag: heading3
+  - offset: 56
+    len: 14
     line: 9
     column: 0
 - - type: text
     text: Heading 3
-  - offset: 57
+  - offset: 60
     len: 9
     line: 9
-    column: 2
+    column: 4
 - - type: end_tag
-    tag: heading1
-  - offset: 55
-    len: 12
+    tag: heading3
+  - offset: 56
+    len: 14
     line: 9
     column: 0
 - - type: start_tag
     tag: paragraph
-  - offset: 68
+  - offset: 71
     len: 7
     line: 11
     column: 0
 - - type: text
     text: Text 3
-  - offset: 68
+  - offset: 71
     len: 6
     line: 11
     column: 0
 - - type: end_tag
     tag: paragraph
-  - offset: 68
+  - offset: 71
     len: 7
     line: 11
     column: 0

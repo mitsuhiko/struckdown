@@ -1,0 +1,12 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_autoanchors_max_level.md
+---
+<h1 id="heading-1">Heading 1</h1>
+<p>Text 1</p>
+<h2 id="manual-id">Heading 2</h2>
+<p>Text 2</p>
+<h3>Heading 3</h3>
+<p>Text 3</p>
+

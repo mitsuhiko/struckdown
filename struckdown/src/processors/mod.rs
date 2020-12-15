@@ -6,4 +6,4 @@
 //! means.
 mod autoanchors;
 
-pub use self::autoanchors::AutoAnchors;
+pub use self::autoanchors::{AutoAnchors, AutoAnchorsOptions};
