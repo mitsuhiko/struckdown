@@ -1,7 +1,7 @@
 ---
-source: tests/test_parser.rs
+source: struckdown/tests/test_snapshots.rs
 expression: events
-input_file: tests/inputs/hello.md
+input_file: struckdown/tests/inputs/hello.md
 ---
 - type: document_start
 - - type: start_tag

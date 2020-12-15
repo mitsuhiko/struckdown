@@ -1,8 +1,0 @@
----
-source: tests/test_html.rs
-expression: html
-input_file: tests/inputs/frontmatter.md
----
-<h1>Title goes here</h1>
-<p>Text goes here</p>
-

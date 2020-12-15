@@ -1,7 +1,7 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
-input_file: tests/inputs/directives.md
+input_file: struckdown/tests/inputs/directives.md
 ---
 <p>Example directive with nested parsing:</p>
 <div class="directive-video"><pre>Raw body content that goes with the directive.

@@ -1,7 +1,7 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
-input_file: tests/inputs/lists.md
+input_file: struckdown/tests/inputs/lists.md
 ---
 <p>This is a simple list:</p>
 <ul><li>a</li>

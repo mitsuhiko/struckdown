@@ -1,5 +1,5 @@
 ---
-source: struckdown/tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
 input_file: struckdown/tests/inputs/role.md
 ---

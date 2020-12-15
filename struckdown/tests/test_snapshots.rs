@@ -1,6 +1,7 @@
 use std::fs;
 
 use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event};
+use struckdown::html::to_html;
 use struckdown::parser::parse;
 use struckdown::processors;
 
@@ -53,10 +54,19 @@ fn apply_extensions<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
 }
 
 #[test]
-fn test_basics() {
+fn test_parser() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
         let events: Vec<_> = apply_extensions(parse(&source)).collect();
         insta::assert_yaml_snapshot!(events);
+    });
+}
+
+#[test]
+fn test_html() {
+    insta::glob!("inputs/*.md", |file| {
+        let source = fs::read_to_string(file).unwrap();
+        let html = to_html(apply_extensions(parse(&source)));
+        insta::assert_snapshot!(html);
     });
 }

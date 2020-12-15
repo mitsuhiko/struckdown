@@ -1,5 +1,5 @@
 ---
-source: struckdown/tests/test_parser.rs
+source: struckdown/tests/test_snapshots.rs
 expression: events
 input_file: struckdown/tests/inputs/ext_autoanchors.md
 ---
@@ -15,6 +15,18 @@ input_file: struckdown/tests/inputs/ext_autoanchors.md
     tag: heading1
     attrs:
       id: heading-1
+  - offset: 0
+    len: 12
+    line: 1
+    column: 0
+- - type: text
+    text: Heading 1
+  - offset: 2
+    len: 9
+    line: 1
+    column: 2
+- - type: end_tag
+    tag: heading1
   - offset: 0
     len: 12
     line: 1
@@ -74,4 +86,42 @@ input_file: struckdown/tests/inputs/ext_autoanchors.md
   - offset: 47
     len: 7
     line: 7
+    column: 0
+- - type: start_tag
+    tag: heading1
+    attrs:
+      id: heading-3
+  - offset: 55
+    len: 12
+    line: 9
+    column: 0
+- - type: text
+    text: Heading 3
+  - offset: 57
+    len: 9
+    line: 9
+    column: 2
+- - type: end_tag
+    tag: heading1
+  - offset: 55
+    len: 12
+    line: 9
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 68
+    len: 7
+    line: 11
+    column: 0
+- - type: text
+    text: Text 3
+  - offset: 68
+    len: 6
+    line: 11
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 68
+    len: 7
+    line: 11
     column: 0

@@ -1,7 +1,7 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
-input_file: tests/inputs/html.md
+input_file: struckdown/tests/inputs/html.md
 ---
 <p>This document has some inline html:</p>
 <div class=foo>

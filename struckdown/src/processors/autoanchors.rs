@@ -84,6 +84,7 @@ impl<'data, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator for AutoAnchors<
                         }
                     }
                 }
+                self.buffer.push_back(next_annotated_event);
                 if depth == 0 {
                     break;
                 }

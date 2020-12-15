@@ -1,7 +1,7 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
-input_file: tests/inputs/footnotes.md
+input_file: struckdown/tests/inputs/footnotes.md
 ---
 <p>This is text with<sup class=footnote-reference><a href="#footnote">1</a></sup> a footnote.</p>
 <div id="footnote"><p>This is the footnote.</p>

@@ -1,7 +1,7 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_snapshots.rs
 expression: html
-input_file: tests/inputs/headings.md
+input_file: struckdown/tests/inputs/headings.md
 ---
 <h1 id="id-one"><code>One</code></h1>
 <h2 id="id-two">Two</h2>
