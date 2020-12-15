@@ -1,0 +1,77 @@
+---
+source: struckdown/tests/test_parser.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_autoanchors.md
+---
+- - type: document_start
+    front_matter:
+      extensions:
+        - AutoAnchors
+  - offset: 0
+    len: 37
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: heading1
+    attrs:
+      id: heading-1
+  - offset: 0
+    len: 12
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 13
+    len: 7
+    line: 3
+    column: 0
+- - type: text
+    text: Text 1
+  - offset: 13
+    len: 6
+    line: 3
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 13
+    len: 7
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: heading1
+    attrs:
+      id: manual-id
+  - offset: 21
+    len: 25
+    line: 5
+    column: 0
+- - type: text
+    text: Heading 2
+  - offset: 23
+    len: 9
+    line: 5
+    column: 2
+- - type: end_tag
+    tag: heading1
+  - offset: 21
+    len: 25
+    line: 5
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 47
+    len: 7
+    line: 7
+    column: 0
+- - type: text
+    text: Text 2
+  - offset: 47
+    len: 6
+    line: 7
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 47
+    len: 7
+    line: 7
+    column: 0

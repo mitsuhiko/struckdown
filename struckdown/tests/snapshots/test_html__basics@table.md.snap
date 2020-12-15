@@ -1,9 +1,10 @@
 ---
-source: tests/test_html.rs
+source: struckdown/tests/test_html.rs
 expression: html
-input_file: tests/inputs/table.md
+input_file: struckdown/tests/inputs/table.md
 ---
-<p>| a | b | c || 1 | 2 | 3 |</p>
+<p>| a | b | c |
+| 1 | 2 | 3 |</p>
 <table><thead><th>a</th>
 <th>b</th>
 <th>c</th>

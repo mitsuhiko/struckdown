@@ -84,6 +84,13 @@ impl<'data> From<Cow<'data, str>> for Str<'data> {
 }
 
 impl<'data> Str<'data> {
+    /// Creates a new string from a static literal.
+    pub const fn new(val: &'data str) -> Str<'data> {
+        Str {
+            inner: cm::CowStr::Borrowed(val),
+        }
+    }
+
     /// Returns the contained string as string slice.
     pub fn as_str(&self) -> &str {
         &self.inner
@@ -455,4 +462,23 @@ pub enum Event<'data> {
     Rule,
     Checkbox(CheckboxEvent),
     FootnoteReference(FootnoteReferenceEvent<'data>),
+}
+
+impl<'data> Event<'data> {
+    /// Returns the contents as raw text.
+    pub fn raw_text(&self) -> Option<&Str<'data>> {
+        static NEWLINE: Str<'static> = Str::new("\n");
+        static DOUBLE_NEWLINE: Str<'static> = Str::new("\n\n");
+        match *self {
+            Event::Text(TextEvent { ref text })
+            | Event::InterpretedText(InterpretedTextEvent { ref text, .. })
+            | Event::InlineCode(InlineCodeEvent { code: ref text, .. })
+            | Event::CodeBlock(CodeBlockEvent { code: ref text, .. }) => Some(text),
+            Event::Directive(DirectiveEvent { body: ref text, .. }) => Some(text),
+            Event::SoftBreak => Some(&NEWLINE),
+            Event::HardBreak => Some(&DOUBLE_NEWLINE),
+            Event::Image(ImageEvent { ref alt, .. }) => alt.as_ref(),
+            _ => None,
+        }
+    }
 }

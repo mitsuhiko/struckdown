@@ -6,3 +6,4 @@
 pub mod event;
 pub mod html;
 pub mod parser;
+pub mod processors;
