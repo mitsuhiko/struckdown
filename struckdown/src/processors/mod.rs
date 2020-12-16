@@ -5,12 +5,14 @@
 //! add anchors to headers if they did not already get a header set by other
 //! means.
 mod autoanchors;
+mod external;
 
 use serde::Deserialize;
 
 use crate::event::AnnotatedEvent;
 
 pub use self::autoanchors::{AutoAnchors, AutoAnchorsIter};
+pub use self::external::{External, ExternalIter};
 
 /// Common trait for all stream processors.
 pub trait Processor {
@@ -36,6 +38,7 @@ pub trait Processor {
 #[serde(tag = "processor")]
 pub enum BuiltinProcessor {
     AutoAnchors(Box<AutoAnchors>),
+    External(Box<External>),
 }
 
 impl Processor for BuiltinProcessor {
@@ -45,6 +48,7 @@ impl Processor for BuiltinProcessor {
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
         match *self {
             BuiltinProcessor::AutoAnchors(options) => options.apply(iter),
+            BuiltinProcessor::External(options) => options.apply(iter),
         }
     }
 
@@ -54,6 +58,7 @@ impl Processor for BuiltinProcessor {
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
         match self {
             BuiltinProcessor::AutoAnchors(options) => options.apply_ref(iter),
+            BuiltinProcessor::External(options) => options.apply_ref(iter),
         }
     }
 }

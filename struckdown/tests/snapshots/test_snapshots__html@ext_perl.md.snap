@@ -1,0 +1,7 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_perl.md
+---
+<p>Hello <strong>Stuff</strong>!</p>
+

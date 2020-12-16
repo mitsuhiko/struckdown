@@ -1,0 +1,59 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_perl.md
+---
+- - type: document_start
+    front_matter:
+      processors:
+        - processor: External
+          cmd: perl
+          args:
+            - "-pe"
+            - s/Stuff/Stuff/
+  - offset: 0
+    len: 108
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 17
+    line: 1
+    column: 0
+- - type: text
+    text: "Hello "
+  - offset: 0
+    len: 6
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: strong
+  - offset: 6
+    len: 9
+    line: 1
+    column: 6
+- - type: text
+    text: Stuff
+  - offset: 8
+    len: 5
+    line: 1
+    column: 8
+- - type: end_tag
+    tag: strong
+  - offset: 6
+    len: 9
+    line: 1
+    column: 6
+- - type: text
+    text: "!"
+  - offset: 15
+    len: 1
+    line: 1
+    column: 15
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 17
+    line: 1
+    column: 0
