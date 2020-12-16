@@ -9,9 +9,8 @@ use regex::Regex;
 
 use crate::event::{
     Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent,
-    DocumentStartEvent, EndTagEvent, Event, FootnoteReferenceEvent, FrontMatter, ImageEvent,
-    InlineCodeEvent, InterpretedTextEvent, Location, RawHtmlEvent, StartTagEvent, Str, Tag,
-    TextEvent,
+    DocumentStartEvent, EndTagEvent, Event, FootnoteReferenceEvent, ImageEvent, InlineCodeEvent,
+    InterpretedTextEvent, Location, RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent, Value,
 };
 
 lazy_static! {
@@ -83,7 +82,7 @@ fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
 }
 
 /// parse front matter in some text
-fn split_and_parse_front_matter<'data>(source: Str<'data>) -> (Option<FrontMatter>, Str<'data>) {
+fn split_and_parse_front_matter<'data>(source: Str<'data>) -> (Option<Value>, Str<'data>) {
     if let Some(m) = FRONTMATTER_RE.captures(source.as_str()) {
         let g0 = m.get(0).unwrap();
         if let Ok(front_matter) = serde_yaml::from_str(&m[1]) {

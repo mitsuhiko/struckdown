@@ -1,6 +1,6 @@
 use std::fs;
 
-use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event};
+use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event, Value};
 use struckdown::html::to_html;
 use struckdown::parser::parse;
 use struckdown::pipeline::Pipeline;
@@ -9,13 +9,13 @@ use struckdown::processors::BuiltinProcessor;
 use itertools::Either;
 
 fn apply_configured_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
-    processors: Vec<serde_yaml::Value>,
+    processors: Vec<Value>,
     iter: I,
 ) -> impl Iterator<Item = AnnotatedEvent<'data>> {
     let mut pipeline = Pipeline::new();
 
     for processor in processors {
-        pipeline.add_processor(serde_yaml::from_value::<BuiltinProcessor>(processor).unwrap());
+        pipeline.add_processor(serde_json::from_value::<BuiltinProcessor>(processor).unwrap());
     }
 
     pipeline.apply(Box::new(iter))
@@ -31,8 +31,7 @@ fn apply_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
             Event::DocumentStart(DocumentStartEvent {
                 front_matter: Some(ref front_matter),
             }) => {
-                if let Some(processors) =
-                    front_matter.get("processors").and_then(|x| x.as_sequence())
+                if let Some(processors) = front_matter.get("processors").and_then(|x| x.as_array())
                 {
                     return Either::Left(apply_configured_processors(
                         processors.iter().map(|x| x.clone()).collect(),

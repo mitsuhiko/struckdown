@@ -39,6 +39,8 @@ fn is_block_tag(tag: Tag) -> bool {
         Tag::Link => false,
         Tag::TableHeader => true,
         Tag::TableBody => true,
+        Tag::Container => true,
+        Tag::Span => false,
     }
 }
 
@@ -74,6 +76,8 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Tag::Strong => "strong",
             Tag::Strikethrough => "ss",
             Tag::Link => "a",
+            Tag::Container => "div",
+            Tag::Span => "span",
         }
     }
 
@@ -143,7 +147,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
 
     pub fn event(&mut self, event: &AnnotatedEvent<'data>) -> Result<(), io::Error> {
         match event.event {
-            Event::DocumentStart(_) => {}
+            Event::DocumentStart(_) | Event::MetaData(_) => {}
             Event::StartTag(StartTagEvent { tag, ref attrs }) => {
                 self.start_tag(tag, attrs)?;
             }

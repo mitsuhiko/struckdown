@@ -13,7 +13,8 @@ use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Represents front-matter in directives.
-pub type FrontMatter = serde_yaml::Value;
+pub use serde_json::value;
+pub type Value = value::Value;
 
 /// An internal string type.
 ///
@@ -298,6 +299,10 @@ pub enum Tag {
     Strikethrough,
     /// `<a>` equivalent.
     Link,
+    /// `<div>` equivalent. Not used in syntax.
+    Container,
+    /// `<span>` equivalent. Not used in syntax.
+    Span,
 }
 
 impl Tag {
@@ -362,7 +367,7 @@ impl<'data> Attrs<'data> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentStartEvent {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub front_matter: Option<FrontMatter>,
+    pub front_matter: Option<Value>,
 }
 
 /// Emitted when a tag starts.
@@ -413,7 +418,7 @@ pub struct DirectiveEvent<'data> {
     /// The optional argument of the directive.
     pub argument: Option<Str<'data>>,
     /// The front matter if available.
-    pub front_matter: Option<FrontMatter>,
+    pub front_matter: Option<Value>,
     /// The directive body.
     pub body: Str<'data>,
 }
@@ -454,6 +459,18 @@ pub struct FootnoteReferenceEvent<'data> {
     pub target: Str<'data>,
 }
 
+/// An inline meta data event.
+///
+/// Meta data can be emitted during processing and can be collected by a
+/// processor or final renderer to do something with it.  It's not defined
+/// what the keys are or what happens if multiple values are emitted for
+/// the same key.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MetaDataEvent<'data> {
+    pub key: Str<'data>,
+    pub value: Value,
+}
+
 /// A event in a struckdown stream.
 ///
 /// Struckdown events are not complete reflections of a markdown document.  In
@@ -481,6 +498,7 @@ pub enum Event<'data> {
     Rule,
     Checkbox(CheckboxEvent),
     FootnoteReference(FootnoteReferenceEvent<'data>),
+    MetaData(MetaDataEvent<'data>),
 }
 
 impl<'data> Event<'data> {
