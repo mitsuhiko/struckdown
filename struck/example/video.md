@@ -8,7 +8,7 @@ This is an example that has a _custom directive_ which can be expanded with the
 `video-directive.py` file:
 
 ```
-struck parse example/video.md | python3 example/video-directive.py | struct render-stream
+struck parse example/video.md | python3 example/video-directive.py | struck render-stream
 ```
 
 And this is what is being processed:
