@@ -1,10 +1,11 @@
 use std::fs;
 
-use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event, Value};
+use struckdown::event::{AnnotatedEvent, DocumentStartEvent, Event};
 use struckdown::html::to_html;
 use struckdown::parser::parse;
 use struckdown::pipeline::Pipeline;
 use struckdown::processors::BuiltinProcessor;
+use struckdown::value::Value;
 
 use itertools::Either;
 
@@ -27,19 +28,13 @@ fn apply_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
     let mut iter = iter.peekable();
 
     if let Some(document_start) = iter.peek() {
-        match document_start.event {
-            Event::DocumentStart(DocumentStartEvent {
-                front_matter: Some(ref front_matter),
-            }) => {
-                if let Some(processors) = front_matter.get("processors").and_then(|x| x.as_array())
-                {
-                    return Either::Left(apply_configured_processors(
-                        processors.iter().map(|x| x.clone()).collect(),
-                        iter,
-                    ));
-                }
+        if let Event::DocumentStart(DocumentStartEvent {
+            front_matter: Some(ref front_matter),
+        }) = document_start.event
+        {
+            if let Some(processors) = front_matter.get("processors").and_then(|x| x.as_array()) {
+                return Either::Left(apply_configured_processors(processors.clone(), iter));
             }
-            _ => {}
         }
     }
 

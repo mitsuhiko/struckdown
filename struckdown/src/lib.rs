@@ -8,3 +8,15 @@ pub mod html;
 pub mod parser;
 pub mod pipeline;
 pub mod processors;
+
+/// Gives access to [`serde_json`] value functionality.
+///
+/// The [`Value`](crate::value::Value) type is used to represent arbitrary data in a few instances.
+/// A notable example is emitted [`front_matter`](crate::event::DocumentStartEvent::front_matter)
+/// or other [`MetaData`](crate::event::MetaDataEvent).
+pub mod value {
+    pub use serde_json::value::*;
+
+    /// A re-export of the [`serde_json::json`] macro.
+    pub use serde_json::json as value;
+}

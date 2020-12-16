@@ -12,9 +12,7 @@ use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-/// Represents front-matter in directives.
-pub use serde_json::value;
-pub type Value = value::Value;
+use crate::value::Value;
 
 /// An internal string type.
 ///

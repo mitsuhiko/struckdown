@@ -10,8 +10,9 @@ use regex::Regex;
 use crate::event::{
     Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent,
     DocumentStartEvent, EndTagEvent, Event, FootnoteReferenceEvent, ImageEvent, InlineCodeEvent,
-    InterpretedTextEvent, Location, RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent, Value,
+    InterpretedTextEvent, Location, RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
 };
+use crate::value::Value;
 
 lazy_static! {
     static ref TEXT_ROLE_RE: Regex = Regex::new(r"\{([^\r\n\}]+)\}$").unwrap();
@@ -60,7 +61,7 @@ fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
         };
     }
 
-    while let Some((event, _)) = iter.next() {
+    for (event, _) in iter {
         match event {
             cm::Event::Start(..) => depth += 1,
             cm::Event::End(..) => depth -= 1,
@@ -82,7 +83,7 @@ fn read_raw<'a, 'data, I: Iterator<Item = (cm::Event<'data>, Range<usize>)>>(
 }
 
 /// parse front matter in some text
-fn split_and_parse_front_matter<'data>(source: Str<'data>) -> (Option<Value>, Str<'data>) {
+fn split_and_parse_front_matter(source: Str<'_>) -> (Option<Value>, Str<'_>) {
     if let Some(m) = FRONTMATTER_RE.captures(source.as_str()) {
         let g0 = m.get(0).unwrap();
         if let Ok(front_matter) = serde_yaml::from_str(&m[1]) {
@@ -264,7 +265,7 @@ fn preliminary_parse_with_trailers<'data>(
                             Tag::Table
                         }
                         cm::Tag::TableHead => {
-                            let ref mut state = table_state.as_mut().expect("not in table");
+                            let state = table_state.as_mut().expect("not in table");
                             state.cell_index = 0;
                             state.cell_is_head = true;
                             // do not emit location information for table headers.  We consider
@@ -274,13 +275,13 @@ fn preliminary_parse_with_trailers<'data>(
                             Tag::TableHeader
                         }
                         cm::Tag::TableRow => {
-                            let ref mut state = table_state.as_mut().expect("not in table");
+                            let state = table_state.as_mut().expect("not in table");
                             state.cell_index = 0;
                             state.cell_is_head = false;
                             Tag::TableRow
                         }
                         cm::Tag::TableCell => {
-                            let ref mut state = table_state.as_mut().expect("not in table");
+                            let state = table_state.as_mut().expect("not in table");
                             attrs.alignment = state
                                 .alignments
                                 .get(state.cell_index)
@@ -387,7 +388,7 @@ fn preliminary_parse_with_trailers<'data>(
                         }
                         Event::InterpretedText(InterpretedTextEvent {
                             text: Str::from_cm_str(value),
-                            role: role.into(),
+                            role,
                         })
                     } else {
                         Event::InlineCode(InlineCodeEvent {
@@ -446,11 +447,8 @@ where
         // attach an end tag trailer to the start tag if needed.
         if depth == 0 {
             if let Event::StartTag(StartTagEvent { ref mut attrs, .. }) = buffer[0].event {
-                match trailer {
-                    Some(Trailer::Id(new_id)) => {
-                        attrs.id = Some(new_id);
-                    }
-                    None => {}
+                if let Some(Trailer::Id(new_id)) = trailer {
+                    attrs.id = Some(new_id);
                 }
             }
             break;
