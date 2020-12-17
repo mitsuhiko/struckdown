@@ -1,6 +1,6 @@
 ---
 processors:
-  - processor: AutoAnchors
+  - processor: auto_anchors
 ---
 
 # Heading 1

@@ -35,7 +35,7 @@ pub trait Processor {
 
 /// Utility struct for processor configurations.
 #[derive(Debug, Deserialize, Clone)]
-#[serde(tag = "processor")]
+#[serde(tag = "processor", rename_all = "snake_case")]
 pub enum BuiltinProcessor {
     AutoAnchors(Box<AutoAnchors>),
     External(Box<External>),

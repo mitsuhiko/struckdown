@@ -1,6 +1,6 @@
 ---
 processors:
-  - processor: External
+  - processor: external
     cmd: this-command-does-not-exist
 ---
 

@@ -1,6 +1,6 @@
 ---
 processors:
-  - processor: External
+  - processor: external
     cmd: python
     args:
       - -c"import sys; sys.stdin.close()"

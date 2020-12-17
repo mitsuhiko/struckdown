@@ -6,10 +6,10 @@ input_file: struckdown/tests/inputs/ext_autoanchors_max_level.md
 - - type: document_start
     front_matter:
       processors:
-        - processor: AutoAnchors
+        - processor: auto_anchors
           max_level: 1
   - offset: 0
-    len: 65
+    len: 66
     line: 1
     column: 0
 - - type: start_tag

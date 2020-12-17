@@ -1,6 +1,6 @@
 ---
 processors:
-  - processor: AutoAnchors
+  - processor: auto_anchors
     max_level: 1
 ---
 

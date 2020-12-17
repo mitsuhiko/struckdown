@@ -6,9 +6,9 @@ input_file: struckdown/tests/inputs/ext_autoanchors.md
 - - type: document_start
     front_matter:
       processors:
-        - processor: AutoAnchors
+        - processor: auto_anchors
   - offset: 0
-    len: 48
+    len: 49
     line: 1
     column: 0
 - - type: start_tag

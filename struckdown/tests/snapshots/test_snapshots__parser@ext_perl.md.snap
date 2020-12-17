@@ -6,7 +6,7 @@ input_file: struckdown/tests/inputs/ext_perl.md
 - - type: document_start
     front_matter:
       processors:
-        - processor: External
+        - processor: external
           cmd: perl
           args:
             - "-pe"

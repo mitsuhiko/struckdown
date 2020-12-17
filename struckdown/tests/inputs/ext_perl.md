@@ -1,6 +1,6 @@
 ---
 processors:
-  - processor: External
+  - processor: external
     cmd: perl
     args:
       - "-pe"
