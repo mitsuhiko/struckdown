@@ -1,0 +1,8 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_broken.md
+---
+- type: error
+  title: "Failed to execute external processor 'this-command-does-not-exist')"
+  description: No such file or directory (os error 2)

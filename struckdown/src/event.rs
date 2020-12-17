@@ -469,6 +469,13 @@ pub struct MetaDataEvent<'data> {
     pub value: Value,
 }
 
+/// An event representing an error during processing
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ErrorEvent<'data> {
+    pub title: Str<'data>,
+    pub description: Option<Str<'data>>,
+}
+
 /// A event in a struckdown stream.
 ///
 /// Struckdown events are not complete reflections of a markdown document.  In
@@ -497,6 +504,7 @@ pub enum Event<'data> {
     Checkbox(CheckboxEvent),
     FootnoteReference(FootnoteReferenceEvent<'data>),
     MetaData(MetaDataEvent<'data>),
+    Error(ErrorEvent<'data>),
 }
 
 impl<'data> Event<'data> {

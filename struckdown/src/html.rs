@@ -6,8 +6,8 @@ use v_htmlescape::escape;
 
 use crate::event::{
     Alignment, AnnotatedEvent, Attrs, CheckboxEvent, CodeBlockEvent, DirectiveEvent, EndTagEvent,
-    Event, FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent, RawHtmlEvent,
-    StartTagEvent, Str, Tag, TextEvent,
+    ErrorEvent, Event, FootnoteReferenceEvent, ImageEvent, InlineCodeEvent, InterpretedTextEvent,
+    RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
 };
 
 struct HtmlRenderer<'data, F> {
@@ -230,6 +230,17 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                     "<sup class=footnote-reference><a href=\"#{}\">{}</a></sup>",
                     escape(target.as_str()),
                     number,
+                )?;
+            }
+            Event::Error(ErrorEvent {
+                ref title,
+                ref description,
+            }) => {
+                write!(
+                    self.out,
+                    "<div class=\"error\">\n<h3>{}</h3>\n<p>{}</p>\n</div>",
+                    escape(title.as_str()),
+                    escape(description.as_ref().map_or("No details", |x| x.as_str())),
                 )?;
             }
         }
