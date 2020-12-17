@@ -1,0 +1,8 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_closed_stdin.md
+---
+- type: error
+  title: "Failed to execute external processor 'python')"
+  description: failed to write to subprocess

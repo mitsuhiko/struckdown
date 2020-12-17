@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::PathBuf;
 use std::process::Stdio;
@@ -22,6 +23,11 @@ pub struct External {
     /// The arguments to pass to the external command.
     #[serde(default)]
     pub args: Vec<String>,
+    /// Optional environment variables to pass.
+    #[serde(default)]
+    pub env: BTreeMap<String, String>,
+    /// An optional working directory.
+    pub cwd: Option<PathBuf>,
 }
 
 impl Processor for External {
@@ -100,12 +106,15 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                     let rt = self.rt.take().unwrap();
                     let mut error = None;
                     rt.block_on(async {
-                        match Command::new(&self.options.cmd)
-                            .args(&self.options.args)
+                        let mut cmd = Command::new(&self.options.cmd);
+                        cmd.args(&self.options.args)
                             .stdin(Stdio::piped())
                             .stdout(Stdio::piped())
-                            .spawn()
-                        {
+                            .envs(&self.options.env);
+                        if let Some(ref cwd) = self.options.cwd {
+                            cmd.current_dir(cwd);
+                        }
+                        match cmd.spawn() {
                             Ok(mut process) => {
                                 self.stdin = process.stdin.take();
                                 self.stdout = process.stdout.take().map(BufReader::new);
@@ -147,7 +156,7 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                     rt.block_on(async {
                         let mut line = String::new();
                         let should_write = self.buffered_event.is_some();
-                        let write = async {
+                        let write_task = async {
                             if let (Some(ref mut stdin), Some(ref buffered_event)) =
                                 (&mut stdin, &self.buffered_event)
                             {
@@ -166,14 +175,18 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                                         Ok(_) => {
                                             rv = Some(match serde_json::from_str(&line) {
                                                 Ok(event) => event,
-                                                Err(ref err) => error_event(err, &self.options).into(),
+                                                Err(ref err) => {
+                                                    self.state = State::Done;
+                                                    error_event(err, &self.options).into()
+                                                }
                                             })
                                         }
                                     }
                                 }
-                                failed = write, if should_write => {
+                                failed = write_task, if should_write => {
                                     self.buffered_event.take();
                                     if failed {
+                                        self.state = State::Done;
                                         rv = Some(error_event(&"failed to write to subprocess", &self.options).into());
                                     }
                                 }

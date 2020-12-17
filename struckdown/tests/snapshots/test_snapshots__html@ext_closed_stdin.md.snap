@@ -1,0 +1,9 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_closed_stdin.md
+---
+<div class="error">
+<h3>Failed to execute external processor &#x27;python&#x27;)</h3>
+<p>failed to write to subprocess</p>
+</div>
