@@ -1,0 +1,5 @@
+processors:
+  - processor: AutoAnchors
+  - processor: External
+    cmd: python3
+    args: [example/video-directive.py]

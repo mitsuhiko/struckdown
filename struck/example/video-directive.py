@@ -19,7 +19,7 @@ def main(events):
     for event in events:
         cmd, location = event
         if cmd["type"] == "directive" and cmd["name"] == "youtube":
-            yield expand_video_directive(cmd)
+            yield expand_video_directive(cmd), location
         else:
             yield event
 
