@@ -25,7 +25,7 @@ input_file: struckdown/tests/inputs/hello.md
 - - type: start_tag
     tag: paragraph
   - offset: 16
-    len: 45
+    len: 70
     line: 3
     column: 0
 - - type: text
@@ -53,14 +53,38 @@ input_file: struckdown/tests/inputs/hello.md
     line: 3
     column: 34
 - - type: text
-    text: "."
+    text: " and "
   - offset: 60
-    len: 1
+    len: 5
     line: 3
     column: 44
+- - type: start_tag
+    tag: emphasis_alt
+  - offset: 65
+    len: 20
+    line: 3
+    column: 49
+- - type: text
+    text: the other emphasis
+  - offset: 66
+    len: 18
+    line: 3
+    column: 50
+- - type: end_tag
+    tag: emphasis_alt
+  - offset: 65
+    len: 20
+    line: 3
+    column: 49
+- - type: text
+    text: "."
+  - offset: 85
+    len: 1
+    line: 3
+    column: 69
 - - type: end_tag
     tag: paragraph
   - offset: 16
-    len: 45
+    len: 70
     line: 3
     column: 0

@@ -291,6 +291,8 @@ pub enum Tag {
     TableCell,
     /// `<em>` equivalent.
     Emphasis,
+    /// Alternative emphasis (might be underline).
+    EmphasisAlt,
     /// `<strong>` equivalent.
     Strong,
     /// `<ss>` equivalent.

@@ -294,7 +294,13 @@ fn preliminary_parse_with_trailers<'data>(
                                 Tag::TableCell
                             }
                         }
-                        cm::Tag::Emphasis => Tag::Emphasis,
+                        cm::Tag::Emphasis => {
+                            if &s[range.start..range.start + 1] == "_" {
+                                Tag::EmphasisAlt
+                            } else {
+                                Tag::Emphasis
+                            }
+                        }
                         cm::Tag::Strong => Tag::Strong,
                         cm::Tag::Strikethrough => Tag::Strikethrough,
                         cm::Tag::Link(_, target, title) => {

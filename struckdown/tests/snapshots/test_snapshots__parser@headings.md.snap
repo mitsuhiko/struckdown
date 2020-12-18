@@ -59,7 +59,7 @@ input_file: struckdown/tests/inputs/headings.md
     line: 5
     column: 0
 - - type: start_tag
-    tag: emphasis
+    tag: emphasis_alt
   - offset: 41
     len: 7
     line: 5
@@ -71,7 +71,7 @@ input_file: struckdown/tests/inputs/headings.md
     line: 5
     column: 5
 - - type: end_tag
-    tag: emphasis
+    tag: emphasis_alt
   - offset: 41
     len: 7
     line: 5

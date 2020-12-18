@@ -4,5 +4,5 @@ expression: html
 input_file: struckdown/tests/inputs/hello.md
 ---
 <h1>Hello World!</h1>
-<p>This is a very basic example with <em>emphasis</em>.</p>
+<p>This is a very basic example with <em>emphasis</em> and <em>the other emphasis</em>.</p>
 
