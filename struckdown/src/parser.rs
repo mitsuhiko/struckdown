@@ -215,7 +215,11 @@ fn preliminary_parse_with_trailers<'data>(
                                     return Some((
                                         AnnotatedEvent {
                                             event: Event::CodeBlock(CodeBlockEvent {
-                                                language: Some(lang),
+                                                language: if lang.as_str().is_empty() {
+                                                    None
+                                                } else {
+                                                    Some(lang)
+                                                },
                                                 code,
                                             }),
                                             location,

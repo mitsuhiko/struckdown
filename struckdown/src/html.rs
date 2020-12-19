@@ -1,6 +1,7 @@
 //! Implements an HTML renderer.
+use std::borrow::Cow;
+use std::collections::HashMap;
 use std::io::{self, Write};
-use std::{borrow::Cow, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 use v_htmlescape::escape;
@@ -12,7 +13,7 @@ use crate::event::{
 };
 
 /// Customizes the HTML rendering.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(default)]
 pub struct HtmlRendererOptions {
     /// When enabled `_foo_` renders into underlines.
@@ -32,6 +33,7 @@ impl Default for HtmlRendererOptions {
 }
 
 impl HtmlRendererOptions {
+    /// Creates the default configuraiton for the renderer options.
     pub fn new() -> HtmlRendererOptions {
         HtmlRendererOptions {
             render_underlines: false,
@@ -42,40 +44,11 @@ impl HtmlRendererOptions {
     }
 }
 
+/// Object capable of rendering events to HTML.
 pub struct HtmlRenderer<'data, 'options, F> {
     out: F,
     footnotes: HashMap<Str<'data>, usize>,
     options: &'options HtmlRendererOptions,
-}
-
-fn is_block_tag(tag: Tag) -> bool {
-    match tag {
-        Tag::Paragraph => true,
-        Tag::Heading1 => true,
-        Tag::Heading2 => true,
-        Tag::Heading3 => true,
-        Tag::Heading4 => true,
-        Tag::Heading5 => true,
-        Tag::Heading6 => true,
-        Tag::BlockQuote => true,
-        Tag::OrderedList => true,
-        Tag::UnorderedList => true,
-        Tag::ListItem => true,
-        Tag::FootnoteDefinition => true,
-        Tag::Table => true,
-        Tag::TableHead => true,
-        Tag::TableRow => true,
-        Tag::TableCell => true,
-        Tag::Emphasis => false,
-        Tag::EmphasisAlt => false,
-        Tag::Strong => false,
-        Tag::Strikethrough => false,
-        Tag::Link => false,
-        Tag::TableHeader => true,
-        Tag::TableBody => true,
-        Tag::Container => true,
-        Tag::Span => false,
-    }
 }
 
 impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
@@ -91,6 +64,36 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
     /// Consumes the writer and returns the inner file.
     pub fn into_writer(self) -> F {
         self.out
+    }
+
+    fn is_block_tag(&self, tag: Tag) -> bool {
+        match tag {
+            Tag::Paragraph => true,
+            Tag::Heading1 => true,
+            Tag::Heading2 => true,
+            Tag::Heading3 => true,
+            Tag::Heading4 => true,
+            Tag::Heading5 => true,
+            Tag::Heading6 => true,
+            Tag::BlockQuote => true,
+            Tag::OrderedList => true,
+            Tag::UnorderedList => true,
+            Tag::ListItem => true,
+            Tag::FootnoteDefinition => true,
+            Tag::Table => true,
+            Tag::TableHead => true,
+            Tag::TableRow => true,
+            Tag::TableCell => true,
+            Tag::Emphasis => false,
+            Tag::EmphasisAlt => false,
+            Tag::Strong => false,
+            Tag::Strikethrough => false,
+            Tag::Link => false,
+            Tag::TableHeader => true,
+            Tag::TableBody => true,
+            Tag::Container => true,
+            Tag::Span => false,
+        }
     }
 
     fn tag_to_html_tag(&self, tag: Tag) -> &'static str {
@@ -216,7 +219,7 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
             self.out,
             "</{}>{}",
             html_tag,
-            if is_block_tag(tag) { "\n" } else { "" }
+            if self.is_block_tag(tag) { "\n" } else { "" }
         )?;
 
         Ok(())
@@ -350,7 +353,7 @@ impl<'data, 'options> HtmlRenderer<'data, 'options, Vec<u8>> {
     }
 }
 
-/// Renders an event stream into HTML.
+/// Convenience shortcut that renders an event stream into HTML.
 pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(
     iter: I,
     options: &HtmlRendererOptions,

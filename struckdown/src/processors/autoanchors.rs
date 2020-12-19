@@ -1,7 +1,8 @@
-use serde::{Deserialize, Serialize};
-use slug::slugify;
 use std::borrow::Cow;
 use std::collections::VecDeque;
+
+use serde::{Deserialize, Serialize};
+use slug::slugify;
 
 use crate::event::{AnnotatedEvent, Event, StartTagEvent};
 use crate::processors::Processor;

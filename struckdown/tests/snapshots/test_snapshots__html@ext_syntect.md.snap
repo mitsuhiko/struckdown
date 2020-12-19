@@ -1,0 +1,11 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_syntect.md
+---
+<p>Code block with syntax highlighting:</p>
+<pre><code><span style="color:#62a35c;">print</span><span style="color:#323232;">(</span><span style="color:#183691;">&quot;Hello World!&quot;</span><span style="color:#323232;">)
+</span></code></pre><p>A regular old code block:</p>
+<pre><code>Stuff
+</code></pre>
+

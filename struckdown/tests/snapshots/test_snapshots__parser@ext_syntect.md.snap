@@ -1,0 +1,62 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_syntect.md
+---
+- - type: document_start
+    front_matter:
+      processors:
+        - processor: syntect
+  - offset: 0
+    len: 44
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 0
+    len: 37
+    line: 1
+    column: 0
+- - type: text
+    text: "Code block with syntax highlighting:"
+  - offset: 0
+    len: 36
+    line: 1
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 0
+    len: 37
+    line: 1
+    column: 0
+- - type: raw_html
+    html: "<pre><code><span style=\"color:#62a35c;\">print</span><span style=\"color:#323232;\">(</span><span style=\"color:#183691;\">&quot;Hello World!&quot;</span><span style=\"color:#323232;\">)\n</span></code></pre>"
+  - offset: 38
+    len: 35
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 75
+    len: 26
+    line: 7
+    column: 0
+- - type: text
+    text: "A regular old code block:"
+  - offset: 75
+    len: 25
+    line: 7
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 75
+    len: 26
+    line: 7
+    column: 0
+- - type: code_block
+    language: ~
+    code: "Stuff\n"
+  - offset: 102
+    len: 13
+    line: 9
+    column: 0

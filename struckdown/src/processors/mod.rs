@@ -9,6 +9,9 @@ mod autoanchors;
 #[cfg(feature = "external-processor")]
 mod external;
 
+#[cfg(feature = "syntect-processor")]
+mod syntect;
+
 use serde::Deserialize;
 
 use crate::event::AnnotatedEvent;
@@ -17,6 +20,9 @@ pub use self::autoanchors::{AutoAnchors, AutoAnchorsIter};
 
 #[cfg(feature = "external-processor")]
 pub use self::external::{External, ExternalIter};
+
+#[cfg(feature = "syntect-processor")]
+pub use self::syntect::{Syntect, SyntectIter};
 
 /// Common trait for all stream processors.
 pub trait Processor {
@@ -44,6 +50,8 @@ pub enum BuiltinProcessor {
     AutoAnchors(Box<AutoAnchors>),
     #[cfg(feature = "external-processor")]
     External(Box<External>),
+    #[cfg(feature = "syntect-processor")]
+    Syntect(Box<Syntect>),
 }
 
 impl Processor for BuiltinProcessor {
@@ -55,6 +63,8 @@ impl Processor for BuiltinProcessor {
             BuiltinProcessor::AutoAnchors(options) => options.apply(iter),
             #[cfg(feature = "external-processor")]
             BuiltinProcessor::External(options) => options.apply(iter),
+            #[cfg(feature = "syntect-processor")]
+            BuiltinProcessor::Syntect(options) => options.apply(iter),
         }
     }
 
@@ -66,6 +76,8 @@ impl Processor for BuiltinProcessor {
             BuiltinProcessor::AutoAnchors(options) => options.apply_ref(iter),
             #[cfg(feature = "external-processor")]
             BuiltinProcessor::External(options) => options.apply_ref(iter),
+            #[cfg(feature = "syntect-processor")]
+            BuiltinProcessor::Syntect(options) => options.apply_ref(iter),
         }
     }
 }
