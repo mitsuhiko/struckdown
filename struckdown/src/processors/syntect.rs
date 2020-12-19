@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::marker::PhantomData;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use syntect::easy::HighlightLines;
@@ -10,20 +11,28 @@ use syntect::parsing::SyntaxSet;
 use crate::event::{AnnotatedEvent, CodeBlockEvent, Event, RawHtmlEvent};
 use crate::processors::Processor;
 
+const DEFAULT_THEME: &str = "InspiredGitHub";
+
 /// Passes a JSON serialized stream through an external program.
 ///
 /// When applied this wraps the stream in a [`SyntectIter`].
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct Syntect {
-    /// The theme to use
-    theme: String,
+    /// The name of the theme to use.  If both this and `theme_path` is not
+    /// set then a default theme is loaded.  If `theme_path` is set then the
+    /// theme in the `theme_path` folder is used.
+    theme: Option<String>,
+    /// When `theme` is not set, then the path to the `.tmTheme` file to load
+    /// otherwise the folder to a collection of theme files.
+    theme_path: Option<PathBuf>,
 }
 
 impl Default for Syntect {
     fn default() -> Syntect {
         Syntect {
-            theme: "InspiredGitHub".into(),
+            theme: None,
+            theme_path: None,
         }
     }
 }
@@ -54,10 +63,29 @@ pub struct SyntectIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>
 
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> SyntectIter<'data, 'options, I> {
     pub fn new(iterator: I, options: Cow<'options, Syntect>) -> Self {
-        let mut theme_set = ThemeSet::load_defaults();
-        let theme = match theme_set.themes.remove(&options.theme) {
-            Some(theme) => theme,
-            None => theme_set.themes.remove("InspiredGitHub").unwrap(),
+        let theme = match (&options.theme, &options.theme_path) {
+            (Some(theme), None) => {
+                let mut theme_set = ThemeSet::load_defaults();
+                match theme_set.themes.remove(theme) {
+                    Some(theme) => theme,
+                    None => theme_set.themes.remove(DEFAULT_THEME).unwrap(),
+                }
+            }
+            (Some(theme), Some(path)) => {
+                let mut theme_set =
+                    ThemeSet::load_from_folder(path).expect("failed to initialized theme folder");
+                match theme_set.themes.remove(theme) {
+                    Some(theme) => theme,
+                    None => theme_set.themes.remove(DEFAULT_THEME).unwrap(),
+                }
+            }
+            (None, Some(ref path)) => {
+                ThemeSet::get_theme(path).expect("failed to load theme by path")
+            }
+            (None, None) => {
+                let mut theme_set = ThemeSet::load_defaults();
+                theme_set.themes.remove(DEFAULT_THEME).unwrap()
+            }
         };
         Self {
             source: iterator,
@@ -80,7 +108,6 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
             ref code,
         }) = annotated_event.event
         {
-            dbg!(language);
             let language = language.as_str();
             let syntax = self
                 .syntax_set
