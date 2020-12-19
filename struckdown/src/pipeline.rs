@@ -67,5 +67,8 @@ fn test_basic_pipeline() {
 
     let mut pipeline = Pipeline::new();
     pipeline.add_processor(BuiltinProcessor::AutoAnchors(Default::default()));
-    insta::assert_snapshot!(to_html(pipeline.process("# Hello World!\nAha")));
+    insta::assert_snapshot!(to_html(
+        pipeline.process("# Hello World!\nAha"),
+        Default::default()
+    ));
 }

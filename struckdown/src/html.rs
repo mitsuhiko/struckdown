@@ -1,7 +1,8 @@
 //! Implements an HTML renderer.
-use std::collections::HashMap;
 use std::io::{self, Write};
+use std::{borrow::Cow, collections::HashMap};
 
+use serde::{Deserialize, Serialize};
 use v_htmlescape::escape;
 
 use crate::event::{
@@ -10,9 +11,38 @@ use crate::event::{
     RawHtmlEvent, StartTagEvent, Str, Tag, TextEvent,
 };
 
-struct HtmlRenderer<'data, F> {
+/// Customizes the HTML rendering.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct HtmlRendererOptions {
+    /// When enabled `_foo_` renders into underlines.
+    pub render_underlines: bool,
+    /// The class to emit for footnote references.
+    pub footnote_reference_class: String,
+    /// The class to emit for footnote definitions.
+    pub footnote_definition_class: String,
+}
+
+impl Default for HtmlRendererOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl HtmlRendererOptions {
+    pub fn new() -> HtmlRendererOptions {
+        HtmlRendererOptions {
+            render_underlines: false,
+            footnote_reference_class: "footnote-reference".into(),
+            footnote_definition_class: "footnote-definition".into(),
+        }
+    }
+}
+
+pub struct HtmlRenderer<'data, F> {
     out: F,
     footnotes: HashMap<Str<'data>, usize>,
+    options: HtmlRendererOptions,
 }
 
 fn is_block_tag(tag: Tag) -> bool {
@@ -46,11 +76,18 @@ fn is_block_tag(tag: Tag) -> bool {
 }
 
 impl<'data, F: Write> HtmlRenderer<'data, F> {
-    pub fn new(out: F) -> HtmlRenderer<'data, F> {
+    /// Creates a new renderer that writes into a writer.
+    pub fn new(out: F, options: HtmlRendererOptions) -> HtmlRenderer<'data, F> {
         HtmlRenderer {
             out,
             footnotes: HashMap::new(),
+            options,
         }
+    }
+
+    /// Consumes the writer and returns the inner file.
+    pub fn into_writer(self) -> F {
+        self.out
     }
 
     fn tag_to_html_tag(&self, tag: Tag) -> &'static str {
@@ -74,7 +111,13 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Tag::TableHead => "th",
             Tag::TableCell => "td",
             Tag::Emphasis => "em",
-            Tag::EmphasisAlt => "em",
+            Tag::EmphasisAlt => {
+                if self.options.render_underlines {
+                    "u"
+                } else {
+                    "em"
+                }
+            }
             Tag::Strong => "strong",
             Tag::Strikethrough => "ss",
             Tag::Link => "a",
@@ -112,6 +155,7 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
             Alignment::Right => "text-align: right",
         });
 
+        let mut combined_class = Cow::Borrowed("");
         if let Some(ref custom) = attrs.custom {
             for (key, value) in custom.iter() {
                 if key == "style" {
@@ -119,10 +163,27 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                         combined_style.push_str("; ");
                     }
                     combined_style.push_str(value.as_str());
+                } else if key == "class" {
+                    combined_class = Cow::Borrowed(value.as_str());
                 } else {
                     write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
                 }
             }
+        }
+
+        if tag == Tag::FootnoteDefinition {
+            combined_class = if combined_class.is_empty() {
+                Cow::Borrowed(&self.options.footnote_definition_class)
+            } else {
+                Cow::Owned(format!(
+                    "{} {}",
+                    combined_class, &self.options.footnote_definition_class
+                ))
+            };
+        }
+
+        if !combined_class.is_empty() {
+            write!(self.out, " class=\"{}\"", escape(&combined_class))?;
         }
 
         if !combined_style.is_empty() {
@@ -147,7 +208,8 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         Ok(())
     }
 
-    pub fn event(&mut self, event: &AnnotatedEvent<'data>) -> Result<(), io::Error> {
+    /// Feeds a single event into the renderer.
+    pub fn feed_event(&mut self, event: &AnnotatedEvent<'data>) -> Result<(), io::Error> {
         match event.event {
             Event::DocumentStart(_) | Event::MetaData(_) => {}
             Event::StartTag(StartTagEvent { tag, ref attrs }) => {
@@ -229,7 +291,8 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
                 };
                 write!(
                     self.out,
-                    "<sup class=footnote-reference><a href=\"#{}\">{}</a></sup>",
+                    "<sup class=\"{}\"><a href=\"#{}\">{}</a></sup>",
+                    escape(&self.options.footnote_reference_class),
                     escape(target.as_str()),
                     number,
                 )?;
@@ -248,14 +311,37 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
         }
         Ok(())
     }
+
+    /// Feeds an event stream into the renderer.
+    pub fn feed_stream<I>(&mut self, iter: I) -> Result<(), io::Error>
+    where
+        I: Iterator<Item = AnnotatedEvent<'data>>,
+    {
+        for event in iter {
+            self.feed_event(&event)?;
+        }
+        Ok(())
+    }
+}
+
+impl<'data> HtmlRenderer<'data, Vec<u8>> {
+    /// Creates a new html renderer writing into a buffer.
+    pub fn new_buffered(options: HtmlRendererOptions) -> Self {
+        HtmlRenderer::new(Vec::new(), options)
+    }
+
+    /// Converts the renderer into a string.
+    pub fn into_string(self) -> String {
+        unsafe { String::from_utf8_unchecked(self.into_writer()) }
+    }
 }
 
 /// Renders an event stream into HTML.
-pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(iter: I) -> String {
-    let mut out = Vec::<u8>::new();
-    let mut renderer = HtmlRenderer::new(&mut out);
-    for event in iter {
-        renderer.event(&event).unwrap();
-    }
-    unsafe { String::from_utf8_unchecked(out) }
+pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(
+    iter: I,
+    options: HtmlRendererOptions,
+) -> String {
+    let mut renderer = HtmlRenderer::new_buffered(options);
+    renderer.feed_stream(iter).unwrap();
+    renderer.into_string()
 }

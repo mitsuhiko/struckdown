@@ -82,7 +82,7 @@ fn render_cmd(cmd: RenderCommand) -> Result<(), Error> {
         .lines()
         .map(|line| -> Result<AnnotatedEvent, Error> { Ok(serde_json::from_str(&line)?) })
         .collect::<Result<Vec<_>, _>>()?;
-    println!("{}", to_html(events.into_iter()));
+    println!("{}", to_html(events.into_iter(), Default::default()));
     Ok(())
 }
 
