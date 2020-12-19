@@ -54,7 +54,7 @@ fn test_parser() {
 fn test_html() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
-        let html = to_html(apply_processors(parse(&source)), Default::default());
+        let html = to_html(apply_processors(parse(&source)), &Default::default());
         insta::assert_snapshot!(html);
     });
 }

@@ -42,10 +42,10 @@ impl HtmlRendererOptions {
     }
 }
 
-pub struct HtmlRenderer<'data, F> {
+pub struct HtmlRenderer<'data, 'options, F> {
     out: F,
     footnotes: HashMap<Str<'data>, usize>,
-    options: HtmlRendererOptions,
+    options: &'options HtmlRendererOptions,
 }
 
 fn is_block_tag(tag: Tag) -> bool {
@@ -78,9 +78,9 @@ fn is_block_tag(tag: Tag) -> bool {
     }
 }
 
-impl<'data, F: Write> HtmlRenderer<'data, F> {
+impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
     /// Creates a new renderer that writes into a writer.
-    pub fn new(out: F, options: HtmlRendererOptions) -> HtmlRenderer<'data, F> {
+    pub fn new(out: F, options: &'options HtmlRendererOptions) -> HtmlRenderer<'data, 'options, F> {
         HtmlRenderer {
             out,
             footnotes: HashMap::new(),
@@ -338,9 +338,9 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     }
 }
 
-impl<'data> HtmlRenderer<'data, Vec<u8>> {
+impl<'data, 'options> HtmlRenderer<'data, 'options, Vec<u8>> {
     /// Creates a new html renderer writing into a buffer.
-    pub fn new_buffered(options: HtmlRendererOptions) -> Self {
+    pub fn new_buffered(options: &'options HtmlRendererOptions) -> Self {
         HtmlRenderer::new(Vec::new(), options)
     }
 
@@ -353,7 +353,7 @@ impl<'data> HtmlRenderer<'data, Vec<u8>> {
 /// Renders an event stream into HTML.
 pub fn to_html<'a, I: Iterator<Item = AnnotatedEvent<'a>>>(
     iter: I,
-    options: HtmlRendererOptions,
+    options: &HtmlRendererOptions,
 ) -> String {
     let mut renderer = HtmlRenderer::new_buffered(options);
     renderer.feed_stream(iter).unwrap();

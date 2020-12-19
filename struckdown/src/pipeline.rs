@@ -69,6 +69,6 @@ fn test_basic_pipeline() {
     pipeline.add_processor(BuiltinProcessor::AutoAnchors(Default::default()));
     insta::assert_snapshot!(to_html(
         pipeline.process("# Hello World!\nAha"),
-        Default::default()
+        &Default::default()
     ));
 }
