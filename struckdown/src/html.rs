@@ -21,6 +21,8 @@ pub struct HtmlRendererOptions {
     pub footnote_reference_class: String,
     /// The class to emit for footnote definitions.
     pub footnote_definition_class: String,
+    /// The initial level for headlines
+    pub initial_headline_level: usize,
 }
 
 impl Default for HtmlRendererOptions {
@@ -35,6 +37,7 @@ impl HtmlRendererOptions {
             render_underlines: false,
             footnote_reference_class: "footnote-reference".into(),
             footnote_definition_class: "footnote-definition".into(),
+            initial_headline_level: 1,
         }
     }
 }
@@ -93,12 +96,23 @@ impl<'data, F: Write> HtmlRenderer<'data, F> {
     fn tag_to_html_tag(&self, tag: Tag) -> &'static str {
         match tag {
             Tag::Paragraph => "p",
-            Tag::Heading1 => "h1",
-            Tag::Heading2 => "h2",
-            Tag::Heading3 => "h3",
-            Tag::Heading4 => "h4",
-            Tag::Heading5 => "h5",
-            Tag::Heading6 => "h6",
+            Tag::Heading1
+            | Tag::Heading2
+            | Tag::Heading3
+            | Tag::Heading4
+            | Tag::Heading5
+            | Tag::Heading6 => {
+                let level = tag.header_level().unwrap();
+                let target_level = (self.options.initial_headline_level.saturating_sub(1)) + level;
+                match target_level {
+                    1 => "h1",
+                    2 => "h2",
+                    3 => "h3",
+                    4 => "h4",
+                    5 => "h5",
+                    _ => "h6",
+                }
+            }
             Tag::BlockQuote => "blockquote",
             Tag::OrderedList => "ol",
             Tag::UnorderedList => "ul",
