@@ -22,10 +22,10 @@ pub struct Syntect {
     /// The name of the theme to use.  If both this and `theme_path` is not
     /// set then a default theme is loaded.  If `theme_path` is set then the
     /// theme in the `theme_path` folder is used.
-    theme: Option<String>,
+    pub theme: Option<String>,
     /// When `theme` is not set, then the path to the `.tmTheme` file to load
     /// otherwise the folder to a collection of theme files.
-    theme_path: Option<PathBuf>,
+    pub theme_path: Option<PathBuf>,
 }
 
 impl Default for Syntect {
