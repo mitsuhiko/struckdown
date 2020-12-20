@@ -1,0 +1,3 @@
+processors:
+  - processor: auto_anchors
+  - processor: syntect

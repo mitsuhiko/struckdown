@@ -26,7 +26,7 @@ This command takes a JSON event stream on stdin, processes it according to the
 given config file and emits the changed events to stdout:
 
 ```
-$ struck process example/process.yml < event-stream > new-event-stream
+$ struck process example/video.yml < event-stream > new-event-stream
 ```
 
 This takes an event stream and renders it to HTML:
