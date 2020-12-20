@@ -13,7 +13,7 @@ use crate::processors::Processor;
 
 const DEFAULT_THEME: &str = "InspiredGitHub";
 
-/// Passes a JSON serialized stream through an external program.
+/// Implements syntax highlighting via [`syntect`].
 ///
 /// When applied this wraps the stream in a [`SyntectIter`].
 #[derive(Debug, Serialize, Deserialize, Clone)]
