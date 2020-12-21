@@ -16,3 +16,9 @@ fn test_html() {
     });
 }
 ```
+
+Run with this:
+
+```
+struck parse example/code.md | struck process example/process.yml | struck render
+```
