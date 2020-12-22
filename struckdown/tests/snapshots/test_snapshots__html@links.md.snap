@@ -3,7 +3,8 @@ source: struckdown/tests/test_snapshots.rs
 expression: html
 input_file: struckdown/tests/inputs/links.md
 ---
-<ul><li><a title="Title" href="&#x2f;">foo_norm</a></li>
+<ul>
+<li><a title="Title" href="&#x2f;">foo_norm</a></li>
 <li><a title="Title" href="&#x2f;">foo_ref</a></li>
 <li><a href="auto@link.invalid">auto@link.invalid</a></li>
 <li>[unknown_ref]</li>

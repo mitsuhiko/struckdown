@@ -4,22 +4,26 @@ expression: html
 input_file: struckdown/tests/inputs/lists.md
 ---
 <p>This is a simple list:</p>
-<ul><li>a</li>
+<ul>
+<li>a</li>
 <li>b</li>
 <li>c</li>
 </ul>
 <p>This is an ordered list:</p>
-<ol><li>foo</li>
+<ol>
+<li>foo</li>
 <li>bar</li>
 <li>baz</li>
 </ol>
 <p>An ordered list starting at a different start:</p>
-<ol start=10><li>foo</li>
+<ol start=10>
+<li>foo</li>
 <li>bar</li>
 <li>baz</li>
 </ol>
 <p>And this is a task list:</p>
-<ul><li><input type=checkbox disabled>unchecked</li>
+<ul>
+<li><input type=checkbox disabled>unchecked</li>
 <li><input type=checkbox disabled checked>checked</li>
 </ul>
 

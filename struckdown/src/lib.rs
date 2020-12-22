@@ -7,6 +7,7 @@ pub mod event;
 pub mod html;
 pub mod parser;
 pub mod pipeline;
+pub mod plain;
 pub mod processors;
 
 /// Gives access to [`serde_json`] value functionality.
@@ -19,4 +20,6 @@ pub mod value {
 
     /// A re-export of the [`serde_json::json`] macro.
     pub use serde_json::json as value;
+
+    pub use serde_json::{from_value, to_value};
 }

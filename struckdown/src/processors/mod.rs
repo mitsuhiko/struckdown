@@ -5,6 +5,7 @@
 //! add anchors to headers if they did not already get a header set by other
 //! means.
 mod autoanchors;
+mod toc;
 
 #[cfg(feature = "external-processor")]
 mod external;
@@ -17,6 +18,7 @@ use serde::Deserialize;
 use crate::event::AnnotatedEvent;
 
 pub use self::autoanchors::{AutoAnchors, AutoAnchorsIter};
+pub use self::toc::{TableOfContents, TableOfContentsIter};
 
 #[cfg(feature = "external-processor")]
 pub use self::external::{External, ExternalIter};
@@ -48,6 +50,7 @@ pub trait Processor {
 #[serde(tag = "processor", rename_all = "snake_case")]
 pub enum BuiltinProcessor {
     AutoAnchors(Box<AutoAnchors>),
+    TableOfContents(Box<TableOfContents>),
     #[cfg(feature = "external-processor")]
     External(Box<External>),
     #[cfg(feature = "syntect-processor")]
@@ -61,6 +64,7 @@ impl Processor for BuiltinProcessor {
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
         match *self {
             BuiltinProcessor::AutoAnchors(options) => options.apply(iter),
+            BuiltinProcessor::TableOfContents(options) => options.apply(iter),
             #[cfg(feature = "external-processor")]
             BuiltinProcessor::External(options) => options.apply(iter),
             #[cfg(feature = "syntect-processor")]
@@ -74,6 +78,7 @@ impl Processor for BuiltinProcessor {
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
         match self {
             BuiltinProcessor::AutoAnchors(options) => options.apply_ref(iter),
+            BuiltinProcessor::TableOfContents(options) => options.apply_ref(iter),
             #[cfg(feature = "external-processor")]
             BuiltinProcessor::External(options) => options.apply_ref(iter),
             #[cfg(feature = "syntect-processor")]

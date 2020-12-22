@@ -141,7 +141,7 @@ impl<'data> Ord for Str<'data> {
 }
 
 /// Location information for an annotated event.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Location {
     /// Byte offset within the source document.
     pub offset: usize,
@@ -158,13 +158,14 @@ pub struct Location {
 /// An annotated event is generally the same as an [`Event`] but it contains
 /// optional annotations.  Annotations are generally just the location information
 /// about where the event ocurred in the original source document.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AnnotatedEvent<'data> {
     /// The actual event.
     pub event: Event<'data>,
     /// The optional location.
     pub location: Option<Location>,
 }
+
 impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
     fn from(event: Event<'data>) -> AnnotatedEvent<'data> {
         AnnotatedEvent {
@@ -322,6 +323,16 @@ impl Tag {
             _ => None,
         }
     }
+
+    /// Creates a start tag event.
+    pub fn start_tag(self, attrs: Attrs<'_>) -> Event<'_> {
+        Event::StartTag(StartTagEvent { tag: self, attrs })
+    }
+
+    /// Creates an end tag event.
+    pub fn end_tag(self) -> Event<'static> {
+        Event::EndTag(EndTagEvent { tag: self })
+    }
 }
 
 fn is_default<T: Default + PartialEq>(v: &T) -> bool {
@@ -329,7 +340,7 @@ fn is_default<T: Default + PartialEq>(v: &T) -> bool {
 }
 
 /// Attributes for tags.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Attrs<'data> {
     /// Holds the start for a list.  
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -340,6 +351,9 @@ pub struct Attrs<'data> {
     /// An optional id for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Str<'data>>,
+    /// Whitespace separated list of classes to attach to the element.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class: Option<Str<'data>>,
     /// An optional title for elements supporting it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<Str<'data>>,
@@ -357,6 +371,7 @@ impl<'data> Attrs<'data> {
         self.start.is_none()
             && self.alignment == Alignment::None
             && self.id.is_none()
+            && self.class.is_none()
             && self.title.is_none()
             && self.target.is_none()
             && self.custom.is_none()
@@ -364,14 +379,14 @@ impl<'data> Attrs<'data> {
 }
 
 /// Emitted at the start of a document.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DocumentStartEvent {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub front_matter: Option<Value>,
 }
 
 /// Emitted when a tag starts.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StartTagEvent<'data> {
     /// The tag that was started by this event.
     pub tag: Tag,
@@ -381,19 +396,19 @@ pub struct StartTagEvent<'data> {
 }
 
 /// Emitted when a tag ends.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EndTagEvent {
     /// The tag that ends.
     pub tag: Tag,
 }
 /// A text event
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TextEvent<'data> {
     pub text: Str<'data>,
 }
 
 /// Not yet filled in interpreted text.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct InterpretedTextEvent<'data> {
     /// The name of the role.
     pub role: Str<'data>,
@@ -402,7 +417,7 @@ pub struct InterpretedTextEvent<'data> {
 }
 
 /// Code block
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CodeBlockEvent<'data> {
     /// The language argument to the code block.
     pub language: Option<Str<'data>>,
@@ -411,7 +426,7 @@ pub struct CodeBlockEvent<'data> {
 }
 
 /// Directive block
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DirectiveEvent<'data> {
     /// The role of the directive.
     pub name: Str<'data>,
@@ -424,14 +439,14 @@ pub struct DirectiveEvent<'data> {
 }
 
 /// Inline code
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct InlineCodeEvent<'data> {
     /// The raw code to be emitted.
     pub code: Str<'data>,
 }
 
 /// An embedded image
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ImageEvent<'data> {
     /// The target location of the image
     pub target: Str<'data>,
@@ -442,19 +457,19 @@ pub struct ImageEvent<'data> {
 }
 
 /// Embedded raw HTML
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RawHtmlEvent<'data> {
     pub html: Str<'data>,
 }
 
 /// A checkbox from a task list.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CheckboxEvent {
     pub checked: bool,
 }
 
 /// A reference to a footnote.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FootnoteReferenceEvent<'data> {
     pub target: Str<'data>,
 }
@@ -465,14 +480,14 @@ pub struct FootnoteReferenceEvent<'data> {
 /// processor or final renderer to do something with it.  It's not defined
 /// what the keys are or what happens if multiple values are emitted for
 /// the same key.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MetaDataEvent<'data> {
     pub key: Str<'data>,
     pub value: Value,
 }
 
 /// An event representing an error during processing
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ErrorEvent<'data> {
     pub title: Str<'data>,
     pub description: Option<Str<'data>>,
@@ -487,7 +502,7 @@ pub struct ErrorEvent<'data> {
 /// example images are no longer represented as tags but events.  Another example
 /// are code tags which are normalized into an abstract code tag no matter the
 /// original syntax.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Event<'data> {
     DocumentStart(DocumentStartEvent),

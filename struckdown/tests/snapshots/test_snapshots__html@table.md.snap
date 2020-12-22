@@ -5,23 +5,43 @@ input_file: struckdown/tests/inputs/table.md
 ---
 <p>| a | b | c |
 | 1 | 2 | 3 |</p>
-<table><thead><th>a</th>
-<th>b</th>
-<th>c</th>
+<table>
+<thead>
+<th>
+a</th>
+<th>
+b</th>
+<th>
+c</th>
 </thead>
-<tbody><tr><td>1</td>
-<td>2</td>
-<td>3</td>
+<tbody>
+<tr>
+<td>
+1</td>
+<td>
+2</td>
+<td>
+3</td>
 </tr>
 </tbody>
 </table>
-<table><thead><th style="text-align: left">a</th>
-<th style="text-align: center">b</th>
-<th style="text-align: right">c</th>
+<table>
+<thead>
+<th style="text-align: left">
+a</th>
+<th style="text-align: center">
+b</th>
+<th style="text-align: right">
+c</th>
 </thead>
-<tbody><tr><td style="text-align: left">1</td>
-<td style="text-align: center">2</td>
-<td style="text-align: right">3</td>
+<tbody>
+<tr>
+<td style="text-align: left">
+1</td>
+<td style="text-align: center">
+2</td>
+<td style="text-align: right">
+3</td>
 </tr>
 </tbody>
 </table>

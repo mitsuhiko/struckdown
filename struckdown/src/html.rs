@@ -66,7 +66,37 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
         self.out
     }
 
-    fn is_block_tag(&self, tag: Tag) -> bool {
+    fn newline_after_start_tag(&self, tag: Tag) -> bool {
+        match tag {
+            Tag::Paragraph => false,
+            Tag::Heading1 => false,
+            Tag::Heading2 => false,
+            Tag::Heading3 => false,
+            Tag::Heading4 => false,
+            Tag::Heading5 => false,
+            Tag::Heading6 => false,
+            Tag::BlockQuote => true,
+            Tag::OrderedList => true,
+            Tag::UnorderedList => true,
+            Tag::ListItem => false,
+            Tag::FootnoteDefinition => true,
+            Tag::Table => true,
+            Tag::TableHead => true,
+            Tag::TableRow => true,
+            Tag::TableCell => true,
+            Tag::Emphasis => false,
+            Tag::EmphasisAlt => false,
+            Tag::Strong => false,
+            Tag::Strikethrough => false,
+            Tag::Link => false,
+            Tag::TableHeader => true,
+            Tag::TableBody => true,
+            Tag::Container => true,
+            Tag::Span => false,
+        }
+    }
+
+    fn newline_after_end_tag(&self, tag: Tag) -> bool {
         match tag {
             Tag::Paragraph => true,
             Tag::Heading1 => true,
@@ -172,7 +202,10 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
             Alignment::Right => "text-align: right",
         });
 
-        let mut combined_class = Cow::Borrowed("");
+        let mut combined_class = attrs
+            .class
+            .as_ref()
+            .map_or(Cow::Borrowed(""), |x| Cow::Borrowed(x.as_str()));
         if let Some(ref custom) = attrs.custom {
             for (key, value) in custom.iter() {
                 if key == "style" {
@@ -180,8 +213,6 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
                         combined_style.push_str("; ");
                     }
                     combined_style.push_str(value.as_str());
-                } else if key == "class" {
-                    combined_class = Cow::Borrowed(value.as_str());
                 } else {
                     write!(self.out, " {}=\"{}\"", key, escape(value.as_str()))?;
                 }
@@ -207,7 +238,15 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
             write!(self.out, " style=\"{}\"", escape(&combined_style))?;
         }
 
-        write!(self.out, ">")?;
+        write!(
+            self.out,
+            ">{}",
+            if self.newline_after_start_tag(tag) {
+                "\n"
+            } else {
+                ""
+            }
+        )?;
 
         Ok(())
     }
@@ -219,7 +258,11 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
             self.out,
             "</{}>{}",
             html_tag,
-            if self.is_block_tag(tag) { "\n" } else { "" }
+            if self.newline_after_end_tag(tag) {
+                "\n"
+            } else {
+                ""
+            }
         )?;
 
         Ok(())

@@ -4,6 +4,7 @@ expression: html
 input_file: struckdown/tests/inputs/footnotes.md
 ---
 <p>This is text with<sup class="footnote-reference"><a href="#footnote">1</a></sup> a footnote.</p>
-<div id="footnote" class="footnote-definition"><p>This is the footnote.</p>
+<div id="footnote" class="footnote-definition">
+<p>This is the footnote.</p>
 </div>
 
