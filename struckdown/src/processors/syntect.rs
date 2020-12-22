@@ -116,16 +116,16 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                 .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
             let mut h = HighlightLines::new(syntax, &self.theme);
             let regions = h.highlight(code.as_str(), &self.syntax_set);
-            return Some(AnnotatedEvent {
-                event: Event::RawHtml(RawHtmlEvent {
+            return Some(AnnotatedEvent::new(
+                RawHtmlEvent {
                     html: format!(
                         "<pre><code>{}</code></pre>",
                         styled_line_to_highlighted_html(&regions[..], IncludeBackground::No)
                     )
                     .into(),
-                }),
-                location: annotated_event.location,
-            });
+                },
+                annotated_event.location,
+            ));
         }
         Some(annotated_event)
     }

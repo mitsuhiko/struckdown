@@ -215,10 +215,10 @@ fn extract_toc<'data, I: Iterator<Item = AnnotatedEvent<'data>>>(
 
     let metadata = if with_metadata {
         Some(
-            Event::MetaData(MetaDataEvent {
+            MetaDataEvent {
                 key: "toc".into(),
                 value: to_value(&toc_tree.children).expect("bad toc tree"),
-            })
+            }
             .into(),
         )
     } else {

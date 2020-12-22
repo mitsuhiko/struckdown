@@ -234,8 +234,8 @@ fn preliminary_parse_with_trailers<'data>(
                                     let body = read_raw(&mut iter);
                                     let (front_matter, body) = split_and_parse_front_matter(body);
                                     return Some((
-                                        AnnotatedEvent {
-                                            event: Event::Directive(DirectiveEvent {
+                                        AnnotatedEvent::new(
+                                            DirectiveEvent {
                                                 name: lang.slice(g1.start(), g1.end()),
                                                 argument: if arg.as_str().is_empty() {
                                                     None
@@ -244,23 +244,23 @@ fn preliminary_parse_with_trailers<'data>(
                                                 },
                                                 front_matter,
                                                 body,
-                                            }),
+                                            },
                                             location,
-                                        },
+                                        ),
                                         None,
                                     ));
                                 } else {
                                     let code = read_raw(&mut iter);
                                     let (language, args) = split_code_block_args(lang);
                                     return Some((
-                                        AnnotatedEvent {
-                                            event: Event::CodeBlock(CodeBlockEvent {
+                                        AnnotatedEvent::new(
+                                            CodeBlockEvent {
                                                 language,
                                                 args,
                                                 code,
-                                            }),
+                                            },
                                             location,
-                                        },
+                                        ),
                                         None,
                                     ));
                                 }
@@ -268,14 +268,14 @@ fn preliminary_parse_with_trailers<'data>(
                             cm::CodeBlockKind::Indented => {
                                 let code = read_raw(&mut iter);
                                 return Some((
-                                    AnnotatedEvent {
-                                        event: Event::CodeBlock(CodeBlockEvent {
+                                    AnnotatedEvent::new(
+                                        CodeBlockEvent {
                                             language: None,
                                             args: None,
                                             code,
-                                        }),
+                                        },
                                         location,
-                                    },
+                                    ),
                                     None,
                                 ));
                             }
@@ -358,8 +358,8 @@ fn preliminary_parse_with_trailers<'data>(
                             // nested text.
                             let alt = read_raw(&mut iter);
                             return Some((
-                                AnnotatedEvent {
-                                    event: Event::Image(ImageEvent {
+                                AnnotatedEvent::new(
+                                    ImageEvent {
                                         target: Str::from_cm_str(target),
                                         alt: if alt.as_str().is_empty() {
                                             None
@@ -371,21 +371,22 @@ fn preliminary_parse_with_trailers<'data>(
                                         } else {
                                             Some(Str::from_cm_str(title))
                                         },
-                                    }),
+                                    },
                                     location,
-                                },
+                                ),
                                 None,
                             ));
                         }
                     };
                     tag_stack.push(tag);
-                    Event::StartTag(StartTagEvent { tag, attrs })
+                    StartTagEvent { tag, attrs }.into()
                 }
                 cm::Event::End(_) => {
                     trailer = pending_trailer.take();
-                    Event::EndTag(EndTagEvent {
+                    EndTagEvent {
                         tag: tag_stack.pop().unwrap(),
-                    })
+                    }
+                    .into()
                 }
                 cm::Event::Text(text) => {
                     let mut text = Str::from_cm_str(text);
@@ -423,7 +424,7 @@ fn preliminary_parse_with_trailers<'data>(
                         }
                     }
 
-                    Event::Text(TextEvent { text })
+                    TextEvent { text }.into()
                 }
                 cm::Event::Code(value) => {
                     // if there is a pending role then we're not working with a
@@ -434,31 +435,33 @@ fn preliminary_parse_with_trailers<'data>(
                             location.offset -= column_adjustment;
                             location.len += column_adjustment;
                         }
-                        Event::InterpretedText(InterpretedTextEvent {
+                        InterpretedTextEvent {
                             text: Str::from_cm_str(value),
                             role,
-                        })
+                        }
+                        .into()
                     } else {
-                        Event::InlineCode(InlineCodeEvent {
+                        InlineCodeEvent {
                             code: Str::from_cm_str(value),
-                        })
+                        }
+                        .into()
                     }
                 }
-                cm::Event::Html(html) => Event::RawHtml(RawHtmlEvent {
+                cm::Event::Html(html) => RawHtmlEvent {
                     html: Str::from_cm_str(html),
-                }),
-                cm::Event::FootnoteReference(target) => {
-                    Event::FootnoteReference(FootnoteReferenceEvent {
-                        target: Str::from_cm_str(target),
-                    })
                 }
+                .into(),
+                cm::Event::FootnoteReference(target) => FootnoteReferenceEvent {
+                    target: Str::from_cm_str(target),
+                }
+                .into(),
                 cm::Event::SoftBreak => Event::SoftBreak,
                 cm::Event::HardBreak => Event::HardBreak,
                 cm::Event::Rule => Event::Rule,
-                cm::Event::TaskListMarker(checked) => Event::Checkbox(CheckboxEvent { checked }),
+                cm::Event::TaskListMarker(checked) => CheckboxEvent { checked }.into(),
             };
 
-            Some((AnnotatedEvent { event, location }, trailer))
+            Some((AnnotatedEvent::new(event, location), trailer))
         } else {
             None
         }
@@ -538,10 +541,10 @@ pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
 
     let mut iter = preliminary_parse_with_trailers(s);
 
-    iter::once(AnnotatedEvent {
-        event: Event::DocumentStart(DocumentStartEvent { front_matter }),
-        location: front_matter_location,
-    })
+    iter::once(AnnotatedEvent::new(
+        DocumentStartEvent { front_matter },
+        front_matter_location,
+    ))
     .chain(
         iter::from_fn(move || {
             if let Some((annotated_event, _)) = iter.next() {

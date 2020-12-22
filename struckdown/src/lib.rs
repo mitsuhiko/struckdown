@@ -7,8 +7,10 @@ pub mod event;
 pub mod html;
 pub mod parser;
 pub mod pipeline;
-pub mod plain;
 pub mod processors;
+
+// internal only for now
+mod plain;
 
 /// Gives access to [`serde_json`] value functionality.
 ///

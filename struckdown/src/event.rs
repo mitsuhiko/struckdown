@@ -166,12 +166,22 @@ pub struct AnnotatedEvent<'data> {
     pub location: Option<Location>,
 }
 
-impl<'data> From<Event<'data>> for AnnotatedEvent<'data> {
-    fn from(event: Event<'data>) -> AnnotatedEvent<'data> {
+impl<'data> AnnotatedEvent<'data> {
+    /// Shortcut to create annotated events.
+    pub fn new<I: Into<Event<'data>>>(
+        value: I,
+        location: Option<Location>,
+    ) -> AnnotatedEvent<'data> {
         AnnotatedEvent {
-            event,
-            location: None,
+            event: value.into(),
+            location,
         }
+    }
+}
+
+impl<'data, T: Into<Event<'data>>> From<T> for AnnotatedEvent<'data> {
+    fn from(value: T) -> AnnotatedEvent<'data> {
+        AnnotatedEvent::new(value, None)
     }
 }
 
@@ -210,19 +220,15 @@ impl<'de, 'data> Deserialize<'de> for AnnotatedEvent<'data> {
                 A: SeqAccess<'de>,
             {
                 Deserialize::deserialize(SeqAccessDeserializer::new(seq))
-                    .map(|(event, location)| AnnotatedEvent { event, location })
+                    .map(|(event, location): (Event, _)| AnnotatedEvent::new(event, location))
             }
 
             fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
             where
                 M: MapAccess<'de>,
             {
-                Deserialize::deserialize(MapAccessDeserializer::new(map)).map(|event| {
-                    AnnotatedEvent {
-                        event,
-                        location: None,
-                    }
-                })
+                Deserialize::deserialize(MapAccessDeserializer::new(map))
+                    .map(|event: Event| AnnotatedEvent::new(event, None))
             }
         }
 
@@ -325,13 +331,13 @@ impl Tag {
     }
 
     /// Creates a start tag event.
-    pub fn start_tag(self, attrs: Attrs<'_>) -> Event<'_> {
-        Event::StartTag(StartTagEvent { tag: self, attrs })
+    pub fn start_tag(self, attrs: Attrs<'_>) -> StartTagEvent<'_> {
+        StartTagEvent { tag: self, attrs }
     }
 
     /// Creates an end tag event.
-    pub fn end_tag(self) -> Event<'static> {
-        Event::EndTag(EndTagEvent { tag: self })
+    pub fn end_tag(self) -> EndTagEvent {
+        EndTagEvent { tag: self }
     }
 }
 
@@ -525,6 +531,38 @@ pub enum Event<'data> {
     MetaData(MetaDataEvent<'data>),
     Error(ErrorEvent<'data>),
 }
+
+macro_rules! impl_from_event_type {
+    ($variant:ident, $name:ty, $lifetime:tt) => {
+        impl<$lifetime> From<$name> for Event<$lifetime> {
+            fn from(value: $name) -> Self {
+                Event::$variant(value)
+            }
+        }
+    };
+    ($variant:ident, $name:ty) => {
+        impl From<$name> for Event<'static> {
+            fn from(value: $name) -> Self {
+                Event::$variant(value)
+            }
+        }
+    };
+}
+
+impl_from_event_type!(DocumentStart, DocumentStartEvent);
+impl_from_event_type!(StartTag, StartTagEvent<'data>, 'data);
+impl_from_event_type!(EndTag, EndTagEvent);
+impl_from_event_type!(Text, TextEvent<'data>, 'data);
+impl_from_event_type!(InterpretedText, InterpretedTextEvent<'data>, 'data);
+impl_from_event_type!(CodeBlock, CodeBlockEvent<'data>, 'data);
+impl_from_event_type!(Directive, DirectiveEvent<'data>, 'data);
+impl_from_event_type!(InlineCode, InlineCodeEvent<'data>, 'data);
+impl_from_event_type!(Image, ImageEvent<'data>, 'data);
+impl_from_event_type!(RawHtml, RawHtmlEvent<'data>, 'data);
+impl_from_event_type!(Checkbox, CheckboxEvent);
+impl_from_event_type!(FootnoteReference, FootnoteReferenceEvent<'data>, 'data);
+impl_from_event_type!(MetaData, MetaDataEvent<'data>, 'data);
+impl_from_event_type!(Error, ErrorEvent<'data>, 'data);
 
 impl<'data> Event<'data> {
     /// Returns the contents as raw text.

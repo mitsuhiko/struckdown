@@ -10,7 +10,7 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 use tokio::process::{ChildStdin, ChildStdout, Command};
 use tokio::runtime::Runtime;
 
-use crate::event::{AnnotatedEvent, ErrorEvent, Event};
+use crate::event::{AnnotatedEvent, ErrorEvent};
 use crate::processors::Processor;
 
 /// Passes a JSON serialized stream through an external program.
@@ -82,15 +82,15 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> ExternalIter<'d
     }
 }
 
-fn error_event<D: Display>(err: &D, options: &External) -> Event<'static> {
-    Event::Error(ErrorEvent {
+fn error_event<D: Display>(err: &D, options: &External) -> ErrorEvent<'static> {
+    ErrorEvent {
         title: format!(
             "Failed to execute external processor '{}')",
             options.cmd.display()
         )
         .into(),
         description: Some(err.to_string().into()),
-    })
+    }
 }
 
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
