@@ -1,0 +1,24 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/code.md
+---
+- type: document_start
+- - type: code_block
+    language: python
+    args: ~
+    code: "print(\"Basic code example\")\n"
+  - offset: 0
+    len: 41
+    line: 1
+    column: 0
+- - type: code_block
+    language: python
+    args:
+      dark: ""
+      filename: hello.py
+    code: "print(\"With dark and filename attribute\")\n"
+  - offset: 43
+    len: 80
+    line: 5
+    column: 0

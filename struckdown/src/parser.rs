@@ -1,4 +1,5 @@
 //! Gives access to the stream parser.
+use std::collections::BTreeMap;
 use std::iter;
 use std::ops::Range;
 
@@ -19,6 +20,8 @@ lazy_static! {
     static ref DIRECTIVE_RE: Regex = Regex::new(r"^\{([^\r\n\}]+)\}(?:\s+(.*?))?$").unwrap();
     static ref HEADING_ID_RE: Regex = Regex::new(r"\s+\{#([^\r\n\}]+)\}\s*$").unwrap();
     static ref FRONTMATTER_RE: Regex = Regex::new(r"(?sm)\A---\s*$(.*?)^---\s*$\r?\n?").unwrap();
+    static ref CODE_LANG_RE: Regex = Regex::new(r#"(\S+)\s+"#).unwrap();
+    static ref CODE_ARG_RE: Regex = Regex::new(r#"([^=\s]+)(?:="([^"]*)"|\S+)?"#).unwrap();
 }
 
 /// Reads until the end of a tag and read embedded content as raw string.
@@ -121,6 +124,42 @@ fn tag_supports_trailers(tag: Tag) -> bool {
         _ => false,
     }
 }
+
+fn split_code_block_args<'data>(
+    info: Str<'data>,
+) -> (Option<Str<'data>>, Option<BTreeMap<Str<'data>, Str<'data>>>) {
+    if info.as_str().trim().is_empty() {
+        return (None, None);
+    }
+
+    let (code, arg_str) = if let Some(m) = CODE_LANG_RE.captures(info.as_str()) {
+        let g0 = m.get(0).unwrap();
+        let g1 = m.get(1).unwrap();
+        (
+            info.slice(g1.start(), g1.end()),
+            info.slice(g0.end(), info.as_str().len()),
+        )
+    } else {
+        return (Some(info), None);
+    };
+
+    let mut args = BTreeMap::new();
+    for m in CODE_ARG_RE.captures_iter(arg_str.as_str()) {
+        let g1 = m.get(1).unwrap();
+        let key = arg_str.slice(g1.start(), g1.end());
+        let value = if let Some(g2) = m.get(2) {
+            arg_str.slice(g2.start(), g2.end())
+        } else if let Some(g3) = m.get(3) {
+            arg_str.slice(g3.start(), g3.end())
+        } else {
+            Str::from("")
+        };
+        args.insert(key, value);
+    }
+
+    (Some(code), if args.is_empty() { None } else { Some(args) })
+}
+
 // helper for table state
 struct TableState {
     alignments: Vec<Alignment>,
@@ -212,14 +251,12 @@ fn preliminary_parse_with_trailers<'data>(
                                     ));
                                 } else {
                                     let code = read_raw(&mut iter);
+                                    let (language, args) = split_code_block_args(lang);
                                     return Some((
                                         AnnotatedEvent {
                                             event: Event::CodeBlock(CodeBlockEvent {
-                                                language: if lang.as_str().is_empty() {
-                                                    None
-                                                } else {
-                                                    Some(lang)
-                                                },
+                                                language,
+                                                args,
                                                 code,
                                             }),
                                             location,
@@ -234,6 +271,7 @@ fn preliminary_parse_with_trailers<'data>(
                                     AnnotatedEvent {
                                         event: Event::CodeBlock(CodeBlockEvent {
                                             language: None,
+                                            args: None,
                                             code,
                                         }),
                                         location,

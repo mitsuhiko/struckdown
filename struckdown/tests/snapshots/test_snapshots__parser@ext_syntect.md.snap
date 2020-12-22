@@ -55,6 +55,7 @@ input_file: struckdown/tests/inputs/ext_syntect.md
     column: 0
 - - type: code_block
     language: ~
+    args: ~
     code: "Stuff\n"
   - offset: 102
     len: 13

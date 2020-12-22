@@ -106,6 +106,7 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
         if let Event::CodeBlock(CodeBlockEvent {
             language: Some(ref language),
             ref code,
+            ..
         }) = annotated_event.event
         {
             let language = language.as_str();

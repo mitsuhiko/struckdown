@@ -284,6 +284,7 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
             Event::CodeBlock(CodeBlockEvent {
                 ref code,
                 ref language,
+                ..
             }) => {
                 write!(self.out, "<pre><code")?;
                 if let Some(language) = language {

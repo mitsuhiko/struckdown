@@ -421,6 +421,8 @@ pub struct InterpretedTextEvent<'data> {
 pub struct CodeBlockEvent<'data> {
     /// The language argument to the code block.
     pub language: Option<Str<'data>>,
+    /// Arguments to the code block.
+    pub args: Option<BTreeMap<Str<'data>, Str<'data>>>,
     /// The raw code to be emitted.
     pub code: Str<'data>,
 }

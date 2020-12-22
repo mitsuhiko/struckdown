@@ -80,6 +80,7 @@ input_file: struckdown/tests/inputs/role.md
     column: 0
 - - type: code_block
     language: python
+    args: ~
     code: "print(\"Hello World\")\n"
   - offset: 96
     len: 34

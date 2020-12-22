@@ -1,0 +1,10 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/code.md
+---
+<pre><code class="lang-python">print(&quot;Basic code example&quot;)
+</code></pre>
+<pre><code class="lang-python">print(&quot;With dark and filename attribute&quot;)
+</code></pre>
+
