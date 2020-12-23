@@ -1,0 +1,18 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_toc_limit.md
+---
+<ul class="table-of-contents">
+<li><span>Headline 1</span><ul>
+<li><span>Headline <em>2</em></span></li>
+<li><span>Headline 2 <strong>again</strong></span></li>
+</ul>
+</li>
+</ul>
+<h1>Headline 1</h1>
+<h2>Headline <em>2</em></h2>
+<h2>Headline 2 <strong>again</strong></h2>
+<h3>Headline 3</h3>
+<h5>Headline 5</h5>
+

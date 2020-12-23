@@ -1,0 +1,312 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_toc_limit.md
+---
+- - type: document_start
+    front_matter:
+      processors:
+        - processor: table_of_contents
+  - offset: 0
+    len: 54
+    line: 1
+    column: 0
+- type: start_tag
+  tag: unordered_list
+  attrs:
+    class: table-of-contents
+- type: start_tag
+  tag: list_item
+- type: start_tag
+  tag: span
+- - type: text
+    text: Headline 1
+  - offset: 33
+    len: 10
+    line: 6
+    column: 2
+- type: end_tag
+  tag: span
+- type: start_tag
+  tag: unordered_list
+- type: start_tag
+  tag: list_item
+- type: start_tag
+  tag: span
+- - type: text
+    text: "Headline "
+  - offset: 48
+    len: 9
+    line: 8
+    column: 3
+- - type: start_tag
+    tag: emphasis_alt
+  - offset: 57
+    len: 3
+    line: 8
+    column: 12
+- - type: text
+    text: "2"
+  - offset: 58
+    len: 1
+    line: 8
+    column: 13
+- - type: end_tag
+    tag: emphasis_alt
+  - offset: 57
+    len: 3
+    line: 8
+    column: 12
+- type: end_tag
+  tag: span
+- type: end_tag
+  tag: list_item
+- type: start_tag
+  tag: list_item
+- type: start_tag
+  tag: span
+- - type: text
+    text: "Headline 2 "
+  - offset: 65
+    len: 11
+    line: 10
+    column: 3
+- - type: start_tag
+    tag: strong
+  - offset: 76
+    len: 9
+    line: 10
+    column: 14
+- - type: text
+    text: again
+  - offset: 78
+    len: 5
+    line: 10
+    column: 16
+- - type: end_tag
+    tag: strong
+  - offset: 76
+    len: 9
+    line: 10
+    column: 14
+- type: end_tag
+  tag: span
+- type: end_tag
+  tag: list_item
+- type: end_tag
+  tag: unordered_list
+- type: end_tag
+  tag: list_item
+- type: end_tag
+  tag: unordered_list
+- - type: start_tag
+    tag: heading1
+  - offset: 31
+    len: 13
+    line: 6
+    column: 0
+- - type: text
+    text: Headline 1
+  - offset: 33
+    len: 10
+    line: 6
+    column: 2
+- - type: end_tag
+    tag: heading1
+  - offset: 31
+    len: 13
+    line: 6
+    column: 0
+- - type: start_tag
+    tag: heading2
+  - offset: 45
+    len: 16
+    line: 8
+    column: 0
+- - type: text
+    text: "Headline "
+  - offset: 48
+    len: 9
+    line: 8
+    column: 3
+- - type: start_tag
+    tag: emphasis_alt
+  - offset: 57
+    len: 3
+    line: 8
+    column: 12
+- - type: text
+    text: "2"
+  - offset: 58
+    len: 1
+    line: 8
+    column: 13
+- - type: end_tag
+    tag: emphasis_alt
+  - offset: 57
+    len: 3
+    line: 8
+    column: 12
+- - type: end_tag
+    tag: heading2
+  - offset: 45
+    len: 16
+    line: 8
+    column: 0
+- - type: start_tag
+    tag: heading2
+  - offset: 62
+    len: 24
+    line: 10
+    column: 0
+- - type: text
+    text: "Headline 2 "
+  - offset: 65
+    len: 11
+    line: 10
+    column: 3
+- - type: start_tag
+    tag: strong
+  - offset: 76
+    len: 9
+    line: 10
+    column: 14
+- - type: text
+    text: again
+  - offset: 78
+    len: 5
+    line: 10
+    column: 16
+- - type: end_tag
+    tag: strong
+  - offset: 76
+    len: 9
+    line: 10
+    column: 14
+- - type: end_tag
+    tag: heading2
+  - offset: 62
+    len: 24
+    line: 10
+    column: 0
+- - type: start_tag
+    tag: heading3
+  - offset: 87
+    len: 15
+    line: 12
+    column: 0
+- - type: text
+    text: Headline 3
+  - offset: 91
+    len: 10
+    line: 12
+    column: 4
+- - type: end_tag
+    tag: heading3
+  - offset: 87
+    len: 15
+    line: 12
+    column: 0
+- - type: start_tag
+    tag: heading5
+  - offset: 103
+    len: 16
+    line: 14
+    column: 0
+- - type: text
+    text: Headline 5
+  - offset: 109
+    len: 10
+    line: 14
+    column: 6
+- - type: end_tag
+    tag: heading5
+  - offset: 103
+    len: 16
+    line: 14
+    column: 0
+- type: meta_data
+  key: toc
+  value:
+    - text: Headline 1
+      events:
+        - - type: text
+            text: Headline 1
+          - offset: 33
+            len: 10
+            line: 6
+            column: 2
+      children:
+        - text: Headline 2
+          events:
+            - - type: text
+                text: "Headline "
+              - offset: 48
+                len: 9
+                line: 8
+                column: 3
+            - - type: start_tag
+                tag: emphasis_alt
+              - offset: 57
+                len: 3
+                line: 8
+                column: 12
+            - - type: text
+                text: "2"
+              - offset: 58
+                len: 1
+                line: 8
+                column: 13
+            - - type: end_tag
+                tag: emphasis_alt
+              - offset: 57
+                len: 3
+                line: 8
+                column: 12
+        - text: Headline 2 again
+          events:
+            - - type: text
+                text: "Headline 2 "
+              - offset: 65
+                len: 11
+                line: 10
+                column: 3
+            - - type: start_tag
+                tag: strong
+              - offset: 76
+                len: 9
+                line: 10
+                column: 14
+            - - type: text
+                text: again
+              - offset: 78
+                len: 5
+                line: 10
+                column: 16
+            - - type: end_tag
+                tag: strong
+              - offset: 76
+                len: 9
+                line: 10
+                column: 14
+          children:
+            - text: Headline 3
+              events:
+                - - type: text
+                    text: Headline 3
+                  - offset: 91
+                    len: 10
+                    line: 12
+                    column: 4
+              children:
+                - text: ~
+                  events: []
+                  children:
+                    - text: Headline 5
+                      events:
+                        - - type: text
+                            text: Headline 5
+                          - offset: 109
+                            len: 10
+                            line: 14
+                            column: 6

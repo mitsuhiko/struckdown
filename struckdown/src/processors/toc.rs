@@ -102,7 +102,7 @@ where
     f(deepest)
 }
 
-fn dump_toc<'data>(out: &mut Vec<AnnotatedEvent<'data>>, toc: &TocItem<'data>) {
+fn dump_toc<'data>(out: &mut Vec<AnnotatedEvent<'data>>, toc: &TocItem<'data>, max_depth: usize) {
     out.push(Tag::ListItem.start_tag(Attrs::default()).into());
     if !toc.events.is_empty() {
         out.push(
@@ -126,10 +126,10 @@ fn dump_toc<'data>(out: &mut Vec<AnnotatedEvent<'data>>, toc: &TocItem<'data>) {
             .into(),
         );
     }
-    if !toc.children.is_empty() {
+    if !toc.children.is_empty() && toc.level < max_depth {
         out.push(Tag::UnorderedList.start_tag(Attrs::default()).into());
         for child in &toc.children {
-            dump_toc(out, child);
+            dump_toc(out, child, max_depth);
         }
         out.push(Tag::UnorderedList.end_tag().into());
     }
@@ -138,13 +138,7 @@ fn dump_toc<'data>(out: &mut Vec<AnnotatedEvent<'data>>, toc: &TocItem<'data>) {
 
 fn extract_toc<'data, I: Iterator<Item = AnnotatedEvent<'data>>>(
     iter: I,
-    with_metadata: bool,
-    class_name: Option<&str>,
-) -> (
-    Vec<AnnotatedEvent<'data>>,
-    Vec<AnnotatedEvent<'data>>,
-    Option<AnnotatedEvent<'data>>,
-) {
+) -> (Vec<AnnotatedEvent<'data>>, TocItem<'data>) {
     let mut buf = Vec::with_capacity(iter.size_hint().0);
     let mut headline = None;
     let mut headline_buf = vec![];
@@ -199,33 +193,7 @@ fn extract_toc<'data, I: Iterator<Item = AnnotatedEvent<'data>>>(
         buf.push(annotated_event);
     }
 
-    let mut toc = Vec::new();
-    toc.push(
-        Tag::UnorderedList
-            .start_tag(Attrs {
-                class: class_name.map(|x| x.to_string().into()),
-                ..Attrs::default()
-            })
-            .into(),
-    );
-    for child in &toc_tree.children {
-        dump_toc(&mut toc, &child);
-    }
-    toc.push(Tag::UnorderedList.end_tag().into());
-
-    let metadata = if with_metadata {
-        Some(
-            MetaDataEvent {
-                key: "toc".into(),
-                value: to_value(&toc_tree.children).expect("bad toc tree"),
-            }
-            .into(),
-        )
-    } else {
-        None
-    };
-
-    (buf, toc, metadata)
+    (buf, toc_tree)
 }
 
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
@@ -235,20 +203,54 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(source) = self.source_iter.take() {
-            let (buf, toc, metadata) = extract_toc(
-                source,
-                self.options.emit_metadata,
-                self.options.class_name.as_deref(),
-            );
+            let (buf, toc_tree) = extract_toc(source);
+
+            let metadata = if self.options.emit_metadata {
+                Some(
+                    MetaDataEvent {
+                        key: "toc".into(),
+                        value: to_value(&toc_tree.children).expect("bad toc tree"),
+                    }
+                    .into(),
+                )
+            } else {
+                None
+            };
+
             let role_name = self.options.role_name.clone();
+            let class_name = self.options.class_name.clone();
             self.iter = Box::new(
                 buf.into_iter()
                     .flat_map(move |annotated_event| {
-                        if let Event::Directive(DirectiveEvent { ref name, .. }) =
-                            annotated_event.event
+                        if let Event::Directive(DirectiveEvent {
+                            ref name,
+                            ref front_matter,
+                            ..
+                        }) = annotated_event.event
                         {
                             if Some(name.as_str()) == role_name.as_deref() {
-                                return Either::Left(toc.clone().into_iter());
+                                let mut toc = Vec::new();
+                                let max_depth = front_matter
+                                    .as_ref()
+                                    .and_then(|x| x.get("max_depth"))
+                                    .and_then(|x| x.as_u64())
+                                    .unwrap_or(6)
+                                    as _;
+                                toc.push(
+                                    Tag::UnorderedList
+                                        .start_tag(Attrs {
+                                            class: class_name
+                                                .as_ref()
+                                                .map(|x| x.to_string().into()),
+                                            ..Attrs::default()
+                                        })
+                                        .into(),
+                                );
+                                for child in &toc_tree.children {
+                                    dump_toc(&mut toc, &child, max_depth);
+                                }
+                                toc.push(Tag::UnorderedList.end_tag().into());
+                                return Either::Left(toc.into_iter());
                             }
                         }
                         Either::Right(iter::once(annotated_event))

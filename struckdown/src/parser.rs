@@ -20,6 +20,7 @@ lazy_static! {
     static ref DIRECTIVE_RE: Regex = Regex::new(r"^\{([^\r\n\}]+)\}(?:\s+(.*?))?$").unwrap();
     static ref HEADING_ID_RE: Regex = Regex::new(r"\s+\{#([^\r\n\}]+)\}\s*$").unwrap();
     static ref FRONTMATTER_RE: Regex = Regex::new(r"(?sm)\A---\s*$(.*?)^---\s*$\r?\n?").unwrap();
+    static ref FRONTMATTER_FULL_RE: Regex = Regex::new(r"(?sm)\A---\s*$(.*)").unwrap();
     static ref CODE_LANG_RE: Regex = Regex::new(r#"(\S+)\s+"#).unwrap();
     static ref CODE_ARG_RE: Regex = Regex::new(r#"([^=\s]+)(?:="([^"]*)"|\S+)?"#).unwrap();
 }
@@ -94,6 +95,10 @@ fn split_and_parse_front_matter(source: Str<'_>) -> (Option<Value>, Str<'_>) {
                 Some(front_matter),
                 source.slice(g0.end(), source.as_str().len()),
             );
+        }
+    } else if let Some(m) = FRONTMATTER_FULL_RE.captures(source.as_str()) {
+        if let Ok(front_matter) = serde_yaml::from_str(&m[1]) {
+            return (Some(front_matter), "".into());
         }
     }
 
