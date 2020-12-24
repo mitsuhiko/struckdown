@@ -3,6 +3,31 @@
 //! with structural extensions (roles and directives) into an event stream.
 //!
 //! This event stream can be processed before rendering.
+//!
+//! # Example
+//!
+//! ~~~
+//! use struckdown::pipeline::Pipeline;
+//! use struckdown::processors::{AutoAnchors, Syntect};
+//! use struckdown::html::to_html;
+//!
+//! // create a default pipeline
+//! let mut pipeline = Pipeline::default();
+//!
+//! // add a processor for anchors and syntax highlighting.
+//! pipeline.add_processor(AutoAnchors::default());
+//! pipeline.add_processor(Syntect::default());
+//!
+//! // parse and process into a final event stream.
+//! let stream = pipeline.process(r#"
+//! # Hello World
+//! ```python
+//! print("Hello World!");
+//! ```"#);
+//!
+//! // render to html
+//! let html = to_html(stream, &Default::default());
+//! ~~~
 pub mod event;
 pub mod html;
 pub mod parser;
