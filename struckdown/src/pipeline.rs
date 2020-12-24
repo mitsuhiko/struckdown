@@ -1,10 +1,11 @@
 //! Abstracts event stream modifications.
 use crate::event::AnnotatedEvent;
-use crate::parser::parse;
+use crate::parser::{Parser, ParserOptions};
 use crate::processors::Processor;
 
 /// Helper for applying preconfigured processors to an event stream.
 pub struct Pipeline {
+    parser: Parser,
     processors: Vec<Box<dyn Processor>>,
 }
 
@@ -18,8 +19,14 @@ impl Pipeline {
     /// Creates a new pipeline.
     pub fn new() -> Pipeline {
         Pipeline {
+            parser: Parser::default(),
             processors: Vec::new(),
         }
+    }
+
+    /// Changes the parsing options.
+    pub fn set_parser_options(&mut self, parser_options: &ParserOptions) {
+        self.parser = Parser::new(parser_options);
     }
 
     /// Adds a processor to the pipeline
@@ -56,7 +63,7 @@ impl Pipeline {
         &'options self,
         source: &'data str,
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        self.apply_ref(Box::new(parse(source, &Default::default())))
+        self.apply_ref(Box::new(self.parser.parse(source)))
     }
 }
 
