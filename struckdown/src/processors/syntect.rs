@@ -47,7 +47,8 @@ pub struct SyntectIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>
 }
 
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> SyntectIter<'data, 'options, I> {
-    pub fn new(iterator: I, options: Cow<'options, Syntect>) -> Self {
+    pub fn new<O: Into<Cow<'options, Syntect>>>(iterator: I, options: O) -> Self {
+        let options = options.into();
         let theme = match (&options.theme, &options.theme_path) {
             (Some(theme), None) => {
                 let mut theme_set = ThemeSet::load_defaults();

@@ -72,11 +72,11 @@ pub struct HtmlSanitizerIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>>
     HtmlSanitizerIter<'data, 'options, I>
 {
-    pub fn new(iterator: I, options: Cow<'options, HtmlSanitizer>) -> Self {
+    pub fn new<O: Into<Cow<'options, HtmlSanitizer>>>(iterator: I, options: O) -> Self {
         Self {
             source_iter: Some(iterator),
             processed_iter: Vec::new().into_iter(),
-            options,
+            options: options.into(),
         }
     }
 }

@@ -34,11 +34,11 @@ pub struct AutoAnchorsIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'d
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>>
     AutoAnchorsIter<'data, 'options, I>
 {
-    pub fn new(iterator: I, options: Cow<'options, AutoAnchors>) -> Self {
+    pub fn new<O: Into<Cow<'options, AutoAnchors>>>(iterator: I, options: O) -> Self {
         Self {
             source: iterator,
             buffer: VecDeque::new(),
-            options,
+            options: options.into(),
         }
     }
 }

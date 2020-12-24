@@ -50,7 +50,7 @@ pub struct ExternalIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data
 }
 
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> ExternalIter<'data, 'options, I> {
-    pub fn new(iterator: I, options: Cow<'options, External>) -> Self {
+    pub fn new<O: Into<Cow<'options, External>>>(iterator: I, options: O) -> Self {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
@@ -61,7 +61,7 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> ExternalIter<'d
             stdin: None,
             stdout: None,
             buffered_event: None,
-            options,
+            options: options.into(),
             rt: Some(rt),
         }
     }

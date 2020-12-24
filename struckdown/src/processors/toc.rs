@@ -46,11 +46,11 @@ pub struct TableOfContentsIter<'data, 'options, I: Iterator<Item = AnnotatedEven
 impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>>
     TableOfContentsIter<'data, 'options, I>
 {
-    pub fn new(iterator: I, options: Cow<'options, TableOfContents>) -> Self {
+    pub fn new<O: Into<Cow<'options, TableOfContents>>>(iterator: I, options: O) -> Self {
         Self {
             source_iter: Some(iterator),
             iter: Box::new(None.into_iter()),
-            options,
+            options: options.into(),
         }
     }
 }
