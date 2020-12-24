@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! implement_processor {
     ($type:ty, $iter:tt) => {
         impl $crate::processors::Processor for $type {

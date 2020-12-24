@@ -21,6 +21,8 @@ lazy_static! {
 pub struct HtmlSanitizer {
     /// Configures link rel to be added to all links.
     pub link_rel: Option<String>,
+    /// Permitted URL schems.
+    pub url_schemes: HashSet<String>,
     /// If configured the `class` attribute is permitted without filtering.
     pub allow_class: bool,
     /// If configured the `style` attribute is permitted without filtering.
@@ -33,6 +35,15 @@ impl Default for HtmlSanitizer {
     fn default() -> HtmlSanitizer {
         HtmlSanitizer {
             link_rel: None,
+            url_schemes: [
+                "ftp", "ftps", "geo", "http", "https", "im", "irc", "ircs", "magnet", "mailto",
+                "mms", "mx", "news", "nntp", "sip", "sms", "smsto", "ssh", "tel", "url", "webcal",
+                "wtai", "xmpp",
+            ]
+            .iter()
+            .copied()
+            .map(Into::into)
+            .collect(),
             allow_class: false,
             allow_style: false,
             allow_comments: true,
@@ -46,6 +57,7 @@ fn make_ammonia(options: &HtmlSanitizer) -> Builder {
     let mut ammonia = Builder::default();
     let mut clean_content_tags = HashSet::new();
     clean_content_tags.insert("script");
+    ammonia.url_schemes(options.url_schemes.iter().map(|x| x.as_str()).collect());
 
     if options.allow_class {
         ammonia.add_generic_attributes(&["class"]);
