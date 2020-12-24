@@ -45,7 +45,7 @@ fn apply_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
 fn test_parser() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
-        let events: Vec<_> = apply_processors(parse(&source)).collect();
+        let events: Vec<_> = apply_processors(parse(&source, &Default::default())).collect();
         insta::assert_yaml_snapshot!(events);
     });
 }
@@ -54,7 +54,10 @@ fn test_parser() {
 fn test_html() {
     insta::glob!("inputs/*.md", |file| {
         let source = fs::read_to_string(file).unwrap();
-        let html = to_html(apply_processors(parse(&source)), &Default::default());
+        let html = to_html(
+            apply_processors(parse(&source, &Default::default())),
+            &Default::default(),
+        );
         insta::assert_snapshot!(html);
     });
 }

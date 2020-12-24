@@ -56,7 +56,7 @@ impl Pipeline {
         &'options self,
         source: &'data str,
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        self.apply_ref(Box::new(parse(source)))
+        self.apply_ref(Box::new(parse(source, &Default::default())))
     }
 }
 

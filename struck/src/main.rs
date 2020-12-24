@@ -69,7 +69,7 @@ struct RenderCommand {
 
 fn parse_cmd(cmd: ParseCommand) -> Result<(), Error> {
     let source = read_file(&cmd.path)?;
-    for event in struckdown::parser::parse(&source) {
+    for event in struckdown::parser::parse(&source, &Default::default()) {
         let out = serde_json::to_string(&event)?;
         println!("{}", out);
     }

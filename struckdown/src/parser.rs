@@ -25,6 +25,79 @@ lazy_static! {
     static ref CODE_ARG_RE: Regex = Regex::new(r#"([^=\s]+)(?:="([^"]*)"|\S+)?"#).unwrap();
 }
 
+/// Configures the parser.
+///
+/// By default all features are enabled.
+#[derive(Debug, Clone)]
+pub struct ParserOptions {
+    /// Enables or disables front matter.
+    pub enable_frontmatter: bool,
+    /// Enables or disables directives.
+    pub enable_directives: bool,
+    /// Enables or disables roles.
+    pub enable_roles: bool,
+    /// Enables or disables tables.
+    pub enable_tables: bool,
+    /// Enables or disables strikethrough.
+    pub enable_strikethrough: bool,
+    /// Enables or disables task lists.
+    pub enable_tasklists: bool,
+    /// Enables or disables footnotes.
+    pub enable_footnotes: bool,
+    /// Enables or disables explicit anchors.
+    pub enable_anchors: bool,
+}
+
+impl Default for ParserOptions {
+    fn default() -> Self {
+        ParserOptions {
+            enable_frontmatter: true,
+            enable_directives: true,
+            enable_roles: true,
+            enable_tables: true,
+            enable_strikethrough: true,
+            enable_tasklists: true,
+            enable_footnotes: true,
+            enable_anchors: true,
+        }
+    }
+}
+
+/// A configurable parser for struckdown.
+pub struct Parser {
+    options: ParserOptions,
+}
+
+impl Default for Parser {
+    fn default() -> Self {
+        Parser::new(&ParserOptions::default())
+    }
+}
+
+impl Parser {
+    /// Creates a new parser with specific options.
+    pub fn new(options: &ParserOptions) -> Parser {
+        Parser {
+            options: options.clone(),
+        }
+    }
+
+    /// Parses structured cmark into an event stream.
+    ///
+    /// The given structured cmark input will be parsed into a well formed event
+    /// stream.  Events are wrapped in the [`AnnotatedEvent`] struct which provides
+    /// appropriate location information.
+    ///
+    /// Note that even without any further processing not all events that come out
+    /// of a markdown document will have a location information set.  For instance
+    /// tables produce a [`Tag::TableHeader`] and [`Tag::TableBody`] wrapper which
+    /// does not exist as such in the source.  Both of those will not have a location
+    /// attached.
+    pub fn parse<'data>(&self, s: &'data str) -> impl Iterator<Item = AnnotatedEvent<'data>> {
+        parse_internal(s, self.options.clone())
+    }
+}
+
 /// Reads until the end of a tag and read embedded content as raw string.
 ///
 /// We do this because in markdown/cmark the alt text of an image is in fact
@@ -183,12 +256,21 @@ struct TableState {
 /// table bodies which are not there in regular cmark.
 fn preliminary_parse_with_trailers<'data>(
     s: &'data str,
+    options: ParserOptions,
 ) -> impl Iterator<Item = (AnnotatedEvent, Option<Trailer<'data>>)> {
     let mut opts = cm::Options::empty();
-    opts.insert(cm::Options::ENABLE_TABLES);
-    opts.insert(cm::Options::ENABLE_STRIKETHROUGH);
-    opts.insert(cm::Options::ENABLE_TASKLISTS);
-    opts.insert(cm::Options::ENABLE_FOOTNOTES);
+    if options.enable_tables {
+        opts.insert(cm::Options::ENABLE_TABLES);
+    }
+    if options.enable_strikethrough {
+        opts.insert(cm::Options::ENABLE_STRIKETHROUGH);
+    }
+    if options.enable_tasklists {
+        opts.insert(cm::Options::ENABLE_TASKLISTS);
+    }
+    if options.enable_footnotes {
+        opts.insert(cm::Options::ENABLE_FOOTNOTES);
+    }
 
     let parser = cm::Parser::new_with_broken_link_callback(s, opts, None);
     let mut iter = parser.into_offset_iter().peekable();
@@ -229,46 +311,48 @@ fn preliminary_parse_with_trailers<'data>(
                         cm::Tag::CodeBlock(kind) => match kind {
                             cm::CodeBlockKind::Fenced(lang) => {
                                 let lang = Str::from_cm_str(lang);
-                                if let Some(m) = DIRECTIVE_RE.captures(lang.as_str()) {
-                                    let g1 = m.get(1).unwrap();
-                                    let arg = if let Some(g2) = m.get(2) {
-                                        lang.slice(g2.start(), g2.end())
-                                    } else {
-                                        "".into()
-                                    };
-                                    let body = read_raw(&mut iter);
-                                    let (front_matter, body) = split_and_parse_front_matter(body);
-                                    return Some((
-                                        AnnotatedEvent::new(
-                                            DirectiveEvent {
-                                                name: lang.slice(g1.start(), g1.end()),
-                                                argument: if arg.as_str().is_empty() {
-                                                    None
-                                                } else {
-                                                    Some(arg)
+                                if options.enable_directives {
+                                    if let Some(m) = DIRECTIVE_RE.captures(lang.as_str()) {
+                                        let g1 = m.get(1).unwrap();
+                                        let arg = if let Some(g2) = m.get(2) {
+                                            lang.slice(g2.start(), g2.end())
+                                        } else {
+                                            "".into()
+                                        };
+                                        let body = read_raw(&mut iter);
+                                        let (front_matter, body) =
+                                            split_and_parse_front_matter(body);
+                                        return Some((
+                                            AnnotatedEvent::new(
+                                                DirectiveEvent {
+                                                    name: lang.slice(g1.start(), g1.end()),
+                                                    argument: if arg.as_str().is_empty() {
+                                                        None
+                                                    } else {
+                                                        Some(arg)
+                                                    },
+                                                    front_matter,
+                                                    body,
                                                 },
-                                                front_matter,
-                                                body,
-                                            },
-                                            location,
-                                        ),
-                                        None,
-                                    ));
-                                } else {
-                                    let code = read_raw(&mut iter);
-                                    let (language, args) = split_code_block_args(lang);
-                                    return Some((
-                                        AnnotatedEvent::new(
-                                            CodeBlockEvent {
-                                                language,
-                                                args,
-                                                code,
-                                            },
-                                            location,
-                                        ),
-                                        None,
-                                    ));
+                                                location,
+                                            ),
+                                            None,
+                                        ));
+                                    }
                                 }
+                                let code = read_raw(&mut iter);
+                                let (language, args) = split_code_block_args(lang);
+                                return Some((
+                                    AnnotatedEvent::new(
+                                        CodeBlockEvent {
+                                            language,
+                                            args,
+                                            code,
+                                        },
+                                        location,
+                                    ),
+                                    None,
+                                ));
                             }
                             cm::CodeBlockKind::Indented => {
                                 let code = read_raw(&mut iter);
@@ -397,35 +481,40 @@ fn preliminary_parse_with_trailers<'data>(
                     let mut text = Str::from_cm_str(text);
 
                     // handle roles
-                    if let Some(&(cm::Event::Code(_), _)) = iter.peek() {
-                        if let Some(m) = TEXT_ROLE_RE.captures(text.as_str()) {
-                            let g0 = m.get(0).unwrap();
-                            let g1 = m.get(1).unwrap();
+                    if options.enable_roles {
+                        if let Some(&(cm::Event::Code(_), _)) = iter.peek() {
+                            if let Some(m) = TEXT_ROLE_RE.captures(text.as_str()) {
+                                let g0 = m.get(0).unwrap();
+                                let g1 = m.get(1).unwrap();
 
-                            // adjust the span of the text to not include the role.
-                            let column_adjustment = g0.end() - g0.start();
-                            if let Some(ref mut location) = location {
-                                location.len -= column_adjustment;
+                                // adjust the span of the text to not include the role.
+                                let column_adjustment = g0.end() - g0.start();
+                                if let Some(ref mut location) = location {
+                                    location.len -= column_adjustment;
+                                }
+                                pending_role =
+                                    Some((text.slice(g1.start(), g1.end()), column_adjustment));
+                                text = text.slice(0, g0.start());
                             }
-                            pending_role =
-                                Some((text.slice(g1.start(), g1.end()), column_adjustment));
-                            text = text.slice(0, g0.start());
                         }
                     }
 
                     // handle explicitly defined IDs for headlines
-                    if let Some(&(cm::Event::End(cm::Tag::Heading(_)), _)) = iter.peek() {
-                        if let Some(m) = HEADING_ID_RE.captures(text.as_str()) {
-                            let g0 = m.get(0).unwrap();
-                            let g1 = m.get(1).unwrap();
+                    if options.enable_anchors {
+                        if let Some(&(cm::Event::End(cm::Tag::Heading(_)), _)) = iter.peek() {
+                            if let Some(m) = HEADING_ID_RE.captures(text.as_str()) {
+                                let g0 = m.get(0).unwrap();
+                                let g1 = m.get(1).unwrap();
 
-                            // adjust the span of the text to not include the role.
-                            let column_adjustment = g0.end() - g0.start();
-                            if let Some(ref mut location) = location {
-                                location.len -= column_adjustment;
+                                // adjust the span of the text to not include the role.
+                                let column_adjustment = g0.end() - g0.start();
+                                if let Some(ref mut location) = location {
+                                    location.len -= column_adjustment;
+                                }
+                                pending_trailer =
+                                    Some(Trailer::Id(text.slice(g1.start(), g1.end())));
+                                text = text.slice(0, g0.start());
                             }
-                            pending_trailer = Some(Trailer::Id(text.slice(g1.start(), g1.end())));
-                            text = text.slice(0, g0.start());
                         }
                     }
 
@@ -514,37 +603,28 @@ where
     buffer
 }
 
-/// Parses structured cmark into an event stream.
-///
-/// The given structured cmark input will be parsed into a well formed event
-/// stream.  Events are wrapped in the [`AnnotatedEvent`] struct which provides
-/// appropriate location information.
-///
-/// Note that even without any further processing not all events that come out
-/// of a markdown document will have a location information set.  For instance
-/// tables produce a [`Tag::TableHeader`] and [`Tag::TableBody`] wrapper which
-/// does not exist as such in the source.  Both of those will not have a location
-/// attached.
-pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
+fn parse_internal(s: &str, options: ParserOptions) -> impl Iterator<Item = AnnotatedEvent> {
     let mut front_matter = None;
     let mut s = s;
     let mut front_matter_location = None;
 
-    if let Some(m) = FRONTMATTER_RE.captures(s) {
-        if let Ok(parsed_front_matter) = serde_yaml::from_str(&m[1]) {
-            let g0 = m.get(0).unwrap();
-            front_matter = Some(parsed_front_matter);
-            front_matter_location = Some(Location {
-                offset: 0,
-                len: g0.end(),
-                line: 1,
-                column: 0,
-            });
-            s = &s[g0.end()..];
+    if options.enable_frontmatter {
+        if let Some(m) = FRONTMATTER_RE.captures(s) {
+            if let Ok(parsed_front_matter) = serde_yaml::from_str(&m[1]) {
+                let g0 = m.get(0).unwrap();
+                front_matter = Some(parsed_front_matter);
+                front_matter_location = Some(Location {
+                    offset: 0,
+                    len: g0.end(),
+                    line: 1,
+                    column: 0,
+                });
+                s = &s[g0.end()..];
+            }
         }
     }
 
-    let mut iter = preliminary_parse_with_trailers(s);
+    let mut iter = preliminary_parse_with_trailers(s, options);
 
     iter::once(AnnotatedEvent::new(
         DocumentStartEvent { front_matter },
@@ -592,4 +672,12 @@ pub fn parse(s: &str) -> impl Iterator<Item = AnnotatedEvent> {
             _ => Either::Right(iter::once(annotated_event)),
         }),
     )
+}
+
+/// Parses structured cmark into an event stream.
+pub fn parse<'data, 'options>(
+    s: &'data str,
+    options: &'options ParserOptions,
+) -> impl Iterator<Item = AnnotatedEvent<'data>> {
+    Parser::new(options).parse(s)
 }
