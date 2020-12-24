@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use slug::slugify;
 
 use crate::event::{AnnotatedEvent, Event, StartTagEvent};
-use crate::processors::Processor;
 
 /// Automatically add anchors to all headers when missing.
 ///
@@ -23,21 +22,7 @@ impl Default for AutoAnchors {
     }
 }
 
-impl Processor for AutoAnchors {
-    fn apply<'data>(
-        self: Box<Self>,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(AutoAnchorsIter::new(iter, Cow::Owned(*self)))
-    }
-
-    fn apply_ref<'data, 'options: 'data>(
-        &'options self,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(AutoAnchorsIter::new(iter, Cow::Borrowed(self)))
-    }
-}
+implement_processor!(AutoAnchors, AutoAnchorsIter);
 
 /// The iterator implementing [`AutoAnchors`].
 pub struct AutoAnchorsIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> {

@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::event::{AnnotatedEvent, Event};
-use crate::processors::Processor;
 
 lazy_static! {
     static ref MARKER_RE: Regex = Regex::new(r"\A\.\.\.([a-f0-9]{32})\.\.\.").unwrap();
@@ -20,20 +19,20 @@ lazy_static! {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct HtmlSanitizer {
-    /// Configures link rel
-    link_rel: Option<String>,
+    /// Configures link rel to be added to all links.
+    pub link_rel: Option<String>,
     /// If configured the `class` attribute is permitted without filtering.
-    allow_class: bool,
+    pub allow_class: bool,
     /// If configured the `style` attribute is permitted without filtering.
-    allow_style: bool,
+    pub allow_style: bool,
     /// If set to `false` then comments are removed.
-    allow_comments: bool,
+    pub allow_comments: bool,
 }
 
 impl Default for HtmlSanitizer {
     fn default() -> HtmlSanitizer {
         HtmlSanitizer {
-            link_rel: Some("noopener noreferrer".into()),
+            link_rel: None,
             allow_class: false,
             allow_style: false,
             allow_comments: true,
@@ -41,21 +40,7 @@ impl Default for HtmlSanitizer {
     }
 }
 
-impl Processor for HtmlSanitizer {
-    fn apply<'data>(
-        self: Box<Self>,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(HtmlSanitizerIter::new(iter, Cow::Owned(*self)))
-    }
-
-    fn apply_ref<'data, 'options: 'data>(
-        &'options self,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(HtmlSanitizerIter::new(iter, Cow::Borrowed(self)))
-    }
-}
+implement_processor!(HtmlSanitizer, HtmlSanitizerIter);
 
 fn make_ammonia(options: &HtmlSanitizer) -> Builder {
     let mut ammonia = Builder::default();

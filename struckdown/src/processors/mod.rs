@@ -4,6 +4,9 @@
 //! stream to enhance it.  For instance a stream processor can automatically
 //! add anchors to headers if they did not already get a header set by other
 //! means.
+#[macro_use]
+mod utils;
+
 mod autoanchors;
 mod toc;
 

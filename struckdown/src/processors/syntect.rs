@@ -9,7 +9,6 @@ use syntect::html::{styled_line_to_highlighted_html, IncludeBackground};
 use syntect::parsing::SyntaxSet;
 
 use crate::event::{AnnotatedEvent, CodeBlockEvent, Event, RawHtmlEvent};
-use crate::processors::Processor;
 
 const DEFAULT_THEME: &str = "InspiredGitHub";
 
@@ -37,21 +36,7 @@ impl Default for Syntect {
     }
 }
 
-impl Processor for Syntect {
-    fn apply<'data>(
-        self: Box<Self>,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(SyntectIter::new(iter, Cow::Owned(*self)))
-    }
-
-    fn apply_ref<'data, 'options: 'data>(
-        &'options self,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(SyntectIter::new(iter, Cow::Borrowed(self)))
-    }
-}
+implement_processor!(Syntect, SyntectIter);
 
 /// The iterator implementing [`Syntect`].
 pub struct SyntectIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> {

@@ -8,7 +8,6 @@ use crate::event::{
     AnnotatedEvent, Attrs, DirectiveEvent, Event, MetaDataEvent, StartTagEvent, Str, Tag,
 };
 use crate::plain::to_plain_text;
-use crate::processors::Processor;
 use crate::value::to_value;
 
 /// Automatically add anchors to all headers when missing.
@@ -35,21 +34,7 @@ impl Default for TableOfContents {
     }
 }
 
-impl Processor for TableOfContents {
-    fn apply<'data>(
-        self: Box<Self>,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(TableOfContentsIter::new(iter, Cow::Owned(*self)))
-    }
-
-    fn apply_ref<'data, 'options: 'data>(
-        &'options self,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(TableOfContentsIter::new(iter, Cow::Borrowed(self)))
-    }
-}
+implement_processor!(TableOfContents, TableOfContentsIter);
 
 /// The iterator implementing [`TableOfContents`].
 pub struct TableOfContentsIter<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> {

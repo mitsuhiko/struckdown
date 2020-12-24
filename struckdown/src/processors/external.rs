@@ -11,7 +11,6 @@ use tokio::process::{ChildStdin, ChildStdout, Command};
 use tokio::runtime::Runtime;
 
 use crate::event::{AnnotatedEvent, ErrorEvent};
-use crate::processors::Processor;
 
 /// Passes a JSON serialized stream through an external program.
 ///
@@ -30,21 +29,7 @@ pub struct External {
     pub cwd: Option<PathBuf>,
 }
 
-impl Processor for External {
-    fn apply<'data>(
-        self: Box<Self>,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(ExternalIter::new(iter, Cow::Owned(*self)))
-    }
-
-    fn apply_ref<'data, 'options: 'data>(
-        &'options self,
-        iter: Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data>,
-    ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
-        Box::new(ExternalIter::new(iter, Cow::Borrowed(self)))
-    }
-}
+implement_processor!(External, ExternalIter);
 
 #[derive(PartialEq)]
 enum State {
