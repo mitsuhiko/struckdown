@@ -3,7 +3,7 @@
 struckdown is an experimental markdown/commonmark processing pipeline
 library inspired by Python's docutils and Sphinx.  The idea is to
 support custom roles and directives for markdown similar to how
-how reStructuredText works and to provide an abstraction that can be
+reStructuredText works and to provide an abstraction that can be
 processed by standardized tools without having to be aware of how
 MarkDown works.
 
