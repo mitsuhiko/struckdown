@@ -1,0 +1,133 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: events
+input_file: struckdown/tests/inputs/ext_html_sanitizer_defaults.md
+---
+- - type: document_start
+    front_matter:
+      processors:
+        - processor: html_sanitizer
+  - offset: 0
+    len: 51
+    line: 1
+    column: 0
+- - type: start_tag
+    tag: heading1
+  - offset: 0
+    len: 15
+    line: 1
+    column: 0
+- - type: text
+    text: Hello World!
+  - offset: 2
+    len: 12
+    line: 1
+    column: 2
+- - type: end_tag
+    tag: heading1
+  - offset: 0
+    len: 15
+    line: 1
+    column: 0
+- - type: raw_html
+    html: "<div>\n"
+  - offset: 16
+    len: 20
+    line: 3
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 37
+    len: 24
+    line: 5
+    column: 0
+- - type: start_tag
+    tag: emphasis
+  - offset: 37
+    len: 23
+    line: 5
+    column: 0
+- - type: text
+    text: Here is some Markdown
+  - offset: 38
+    len: 21
+    line: 5
+    column: 1
+- - type: end_tag
+    tag: emphasis
+  - offset: 37
+    len: 23
+    line: 5
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 37
+    len: 24
+    line: 5
+    column: 0
+- - type: raw_html
+    html: "</div>\n"
+  - offset: 62
+    len: 7
+    line: 7
+    column: 0
+- - type: raw_html
+    html: "\n"
+  - offset: 70
+    len: 8
+    line: 9
+    column: 0
+- - type: raw_html
+    html: ""
+  - offset: 78
+    len: 19
+    line: 10
+    column: 0
+- - type: raw_html
+    html: ""
+  - offset: 97
+    len: 9
+    line: 11
+    column: 0
+- - type: raw_html
+    html: "<div>\n"
+  - offset: 106
+    len: 30
+    line: 12
+    column: 0
+- - type: raw_html
+    html: "  <p>This shit is safe.\n"
+  - offset: 136
+    len: 24
+    line: 13
+    column: 0
+- - type: raw_html
+    html: "  \n"
+  - offset: 160
+    len: 49
+    line: 14
+    column: 0
+- - type: raw_html
+    html: "</p></div>\n"
+  - offset: 209
+    len: 7
+    line: 15
+    column: 0
+- - type: start_tag
+    tag: paragraph
+  - offset: 217
+    len: 16
+    line: 17
+    column: 0
+- - type: text
+    text: More stuff here.
+  - offset: 217
+    len: 16
+    line: 17
+    column: 0
+- - type: end_tag
+    tag: paragraph
+  - offset: 217
+    len: 16
+    line: 17
+    column: 0

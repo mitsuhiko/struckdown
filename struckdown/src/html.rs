@@ -374,6 +374,10 @@ impl<'data, 'options, F: Write> HtmlRenderer<'data, 'options, F> {
     }
 
     /// Feeds an event stream into the renderer.
+    ///
+    /// In this case the iterator is consumed.  Alternatively you can/have
+    /// to use `feed_event` directly which lets you pass events by
+    /// reference instead.
     pub fn feed_stream<I>(&mut self, iter: I) -> Result<(), io::Error>
     where
         I: Iterator<Item = AnnotatedEvent<'data>>,

@@ -1,0 +1,18 @@
+---
+source: struckdown/tests/test_snapshots.rs
+expression: html
+input_file: struckdown/tests/inputs/ext_html_sanitizer.md
+---
+<h1>Hello World!</h1>
+<div class="hello">
+<p><em>Here is some Markdown</em></p>
+</div>
+<style>
+  background: blue
+</style>
+<div style="background: red">
+  <p>This shit is safe.
+  
+</p></div>
+<p>More stuff here.</p>
+

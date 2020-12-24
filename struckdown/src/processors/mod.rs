@@ -13,6 +13,9 @@ mod external;
 #[cfg(feature = "syntect-processor")]
 mod syntect;
 
+#[cfg(feature = "html-sanitizer-processor")]
+mod html_sanitizer;
+
 use serde::Deserialize;
 
 use crate::event::AnnotatedEvent;
@@ -25,6 +28,9 @@ pub use self::external::{External, ExternalIter};
 
 #[cfg(feature = "syntect-processor")]
 pub use self::syntect::{Syntect, SyntectIter};
+
+#[cfg(feature = "html-sanitizer-processor")]
+pub use self::html_sanitizer::{HtmlSanitizer, HtmlSanitizerIter};
 
 /// Common trait for all stream processors.
 pub trait Processor {
@@ -55,6 +61,8 @@ pub enum BuiltinProcessor {
     External(Box<External>),
     #[cfg(feature = "syntect-processor")]
     Syntect(Box<Syntect>),
+    #[cfg(feature = "html-sanitizer-processor")]
+    HtmlSanitizer(Box<HtmlSanitizer>),
 }
 
 impl Processor for BuiltinProcessor {
@@ -69,6 +77,8 @@ impl Processor for BuiltinProcessor {
             BuiltinProcessor::External(options) => options.apply(iter),
             #[cfg(feature = "syntect-processor")]
             BuiltinProcessor::Syntect(options) => options.apply(iter),
+            #[cfg(feature = "html-sanitizer-processor")]
+            BuiltinProcessor::HtmlSanitizer(options) => options.apply(iter),
         }
     }
 
@@ -83,6 +93,8 @@ impl Processor for BuiltinProcessor {
             BuiltinProcessor::External(options) => options.apply_ref(iter),
             #[cfg(feature = "syntect-processor")]
             BuiltinProcessor::Syntect(options) => options.apply_ref(iter),
+            #[cfg(feature = "html-sanitizer-processor")]
+            BuiltinProcessor::HtmlSanitizer(options) => options.apply_ref(iter),
         }
     }
 }
