@@ -145,7 +145,7 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                             if let (Some(ref mut stdin), Some(ref buffered_event)) =
                                 (&mut stdin, &self.buffered_event)
                             {
-                                stdin.write(buffered_event).await.is_err()
+                                stdin.write_all(buffered_event).await.is_err()
                             } else {
                                 false
                             }
