@@ -116,7 +116,7 @@ impl<'data, 'options, I: Iterator<Item = AnnotatedEvent<'data>>> Iterator
                     segments.insert(id, idx);
                 }
             }
-            let cleaned = dbg!(ammonia.clean(&html_buf).to_string());
+            let cleaned = ammonia.clean(&html_buf).to_string();
 
             let mut replacements = BTreeMap::new();
             for segment in cleaned.split(&marker) {
