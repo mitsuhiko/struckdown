@@ -11,10 +11,11 @@ keywords = ["cmark", "commonmark", "markdown", "rst"]
 readme = "README.md"
 
 [features]
-default = ["external-processor", "syntect-processor", "html-sanitizer-processor"]
-external-processor = ["tokio", "subprocess"]
+default = ["external-processor", "syntect-processor", "html-sanitizer-processor", "autoanchors-processor"]
+external-processor = ["tokio"]
 syntect-processor = ["syntect"]
 html-sanitizer-processor = ["ammonia", "uuid"]
+autoanchors-processor = ["slug"]
 
 [dependencies]
 pulldown-cmark = "0.8.0"
@@ -22,15 +23,14 @@ serde = { version = "1.0.118", features = ["derive"] }
 regex = "1.4.2"
 lazy_static = "1.4.0"
 v_htmlescape = "0.12.0"
-itertools = "0.9.0"
 serde_yaml = "0.8.14"
-slug = "0.1.4"
+slug = { version = "0.1.4", optional = true }
 serde_json = { version = "1.0.60", features = ["preserve_order"] }
-subprocess = { version = "0.2.6", optional = true }
 tokio = { version = "1.0.0", features = ["rt", "process", "macros", "io-util"], optional = true }
 syntect = { version = "4.5.0", optional = true }
 ammonia = { version = "3.1.0", optional = true }
 uuid = { version = "0.8.1", features = ["v4"], optional = true }
+either = "1.6.1"
 
 [dev-dependencies]
 insta = { version = "1.3.0", features = ["glob"] }

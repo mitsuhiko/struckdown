@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use std::iter;
 use std::ops::Range;
 
-use itertools::Either;
+use either::Either;
 use lazy_static::lazy_static;
 use pulldown_cmark as cm;
 use regex::Regex;

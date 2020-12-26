@@ -7,7 +7,7 @@ use struckdown::pipeline::Pipeline;
 use struckdown::processors::BuiltinProcessor;
 use struckdown::value::Value;
 
-use itertools::Either;
+use either::Either;
 
 fn apply_configured_processors<'data, I: 'data + Iterator<Item = AnnotatedEvent<'data>>>(
     processors: Vec<Value>,

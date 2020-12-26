@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::{iter, mem};
 
-use itertools::Either;
+use either::Either;
 use serde::{Deserialize, Serialize};
 
 use crate::event::{

@@ -7,8 +7,10 @@
 #[macro_use]
 mod utils;
 
-mod autoanchors;
 mod toc;
+
+#[cfg(feature = "autoanchors-processor")]
+mod autoanchors;
 
 #[cfg(feature = "external-processor")]
 mod external;
@@ -23,8 +25,10 @@ use serde::Deserialize;
 
 use crate::event::AnnotatedEvent;
 
-pub use self::autoanchors::{AutoAnchors, AutoAnchorsIter};
 pub use self::toc::{TableOfContents, TableOfContentsIter};
+
+#[cfg(feature = "autoanchors-processor")]
+pub use self::autoanchors::{AutoAnchors, AutoAnchorsIter};
 
 #[cfg(feature = "external-processor")]
 pub use self::external::{External, ExternalIter};
@@ -88,8 +92,9 @@ macro_rules! builtin_processors {
 }
 
 builtin_processors! {
-    type AutoAnchors;
     type TableOfContents;
+    #[cfg(feature = "autoanchors-processor")]
+    type AutoAnchors;
     #[cfg(feature = "external-processor")]
     type External;
     #[cfg(feature = "syntect-processor")]
