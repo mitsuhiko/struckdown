@@ -1,6 +1,6 @@
 //! Gives access to the stream parser.
 use std::collections::BTreeMap;
-use std::iter;
+use std::iter::{self, once};
 use std::ops::Range;
 
 use either::Either;
@@ -626,24 +626,22 @@ fn parse_internal(s: &str, options: ParserOptions) -> impl Iterator<Item = Annot
 
     let mut iter = preliminary_parse_with_trailers(s, options);
 
-    iter::once(AnnotatedEvent::new(
+    once(AnnotatedEvent::new(
         DocumentStartEvent { front_matter },
         front_matter_location,
     ))
     .chain(
         iter::from_fn(move || {
-            if let Some((annotated_event, _)) = iter.next() {
+            iter.next().map(|(annotated_event, _)| {
                 if let Event::StartTag(StartTagEvent { tag, .. }) = annotated_event.event {
                     if tag_supports_trailers(tag) {
-                        return Some(Either::Left(
+                        return Either::Left(
                             buffer_for_trailers(annotated_event, &mut iter).into_iter(),
-                        ));
+                        );
                     }
                 }
-                Some(Either::Right(iter::once(annotated_event)))
-            } else {
-                None
-            }
+                Either::Right(once(annotated_event))
+            })
         })
         .flatten()
         .flat_map(|annotated_event| match annotated_event.event {
@@ -651,7 +649,7 @@ fn parse_internal(s: &str, options: ParserOptions) -> impl Iterator<Item = Annot
             Event::EndTag(EndTagEvent {
                 tag: Tag::TableHeader,
             }) => Either::Left(
-                iter::once(annotated_event).chain(iter::once(
+                once(annotated_event).chain(once(
                     Event::StartTag(StartTagEvent {
                         tag: Tag::TableBody,
                         attrs: Default::default(),
@@ -661,15 +659,15 @@ fn parse_internal(s: &str, options: ParserOptions) -> impl Iterator<Item = Annot
             ),
             // just before the table end, we close the table body.
             Event::EndTag(EndTagEvent { tag: Tag::Table }) => Either::Left(
-                iter::once(
+                once(
                     Event::EndTag(EndTagEvent {
                         tag: Tag::TableBody,
                     })
                     .into(),
                 )
-                .chain(iter::once(annotated_event)),
+                .chain(once(annotated_event)),
             ),
-            _ => Either::Right(iter::once(annotated_event)),
+            _ => Either::Right(once(annotated_event)),
         }),
     )
 }
