@@ -624,7 +624,16 @@ fn parse_internal(s: &str, options: ParserOptions) -> impl Iterator<Item = Annot
         }
     }
 
-    let mut iter = preliminary_parse_with_trailers(s, options);
+    let mut iter = preliminary_parse_with_trailers(s, options).filter(|x| {
+        // skip empty text events.  These can happen because we're slicing around.
+        // Ignore them for a cleaner stream.
+        if let Event::Text(ref text_event) = x.0.event {
+            if text_event.text.as_str().is_empty() {
+                return false;
+            }
+        }
+        true
+    });
 
     once(AnnotatedEvent::new(
         DocumentStartEvent { front_matter },

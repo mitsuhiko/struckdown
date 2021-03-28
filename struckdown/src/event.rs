@@ -114,6 +114,17 @@ impl<'data> Str<'data> {
             },
         }
     }
+
+    /// Converts the string into a static version.
+    fn into_static(self) -> Str<'static> {
+        Str {
+            inner: match self.inner {
+                cm::CowStr::Borrowed(val) => cm::CowStr::Boxed(val.to_string().into_boxed_str()),
+                cm::CowStr::Boxed(ref val) => cm::CowStr::Boxed(val.to_string().into_boxed_str()),
+                cm::CowStr::Inlined(val) => cm::CowStr::Inlined(val),
+            },
+        }
+    }
 }
 
 impl<'data> Display for Str<'data> {
@@ -141,7 +152,7 @@ impl<'data> Ord for Str<'data> {
 }
 
 /// Location information for an annotated event.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Location {
     /// Byte offset within the source document.
     pub offset: usize,
@@ -175,6 +186,14 @@ impl<'data> AnnotatedEvent<'data> {
         AnnotatedEvent {
             event: value.into(),
             location,
+        }
+    }
+
+    /// Converts the event into a static one.
+    pub fn into_static(self) -> AnnotatedEvent<'static> {
+        AnnotatedEvent {
+            event: self.event.into_static(),
+            location: self.location,
         }
     }
 }
@@ -382,6 +401,24 @@ impl<'data> Attrs<'data> {
             && self.target.is_none()
             && self.custom.is_none()
     }
+
+    /// Converts the attrs into a static one.
+    fn into_static(self) -> Attrs<'static> {
+        Attrs {
+            start: self.start,
+            alignment: self.alignment,
+            id: self.id.map(|x| x.into_static()),
+            class: self.class.map(|x| x.into_static()),
+            title: self.title.map(|x| x.into_static()),
+            target: self.target.map(|x| x.into_static()),
+            custom: self.custom.map(|custom| {
+                custom
+                    .into_iter()
+                    .map(|(k, v)| (Cow::Owned(k.into_owned()), v.into_static()))
+                    .collect()
+            }),
+        }
+    }
 }
 
 /// Emitted at the start of a document.
@@ -579,6 +616,66 @@ impl<'data> Event<'data> {
             Event::HardBreak => Some(&DOUBLE_NEWLINE),
             Event::Image(ImageEvent { ref alt, .. }) => alt.as_ref(),
             _ => None,
+        }
+    }
+
+    /// Converts the event into a static one.
+    pub fn into_static(self) -> Event<'static> {
+        match self {
+            Event::DocumentStart(value) => Event::DocumentStart(value),
+            Event::StartTag(value) => Event::StartTag(StartTagEvent {
+                tag: value.tag,
+                attrs: value.attrs.into_static(),
+            }),
+            Event::EndTag(value) => Event::EndTag(value),
+            Event::Text(value) => Event::Text(TextEvent {
+                text: value.text.into_static(),
+            }),
+            Event::InterpretedText(value) => Event::InterpretedText(InterpretedTextEvent {
+                role: value.role.into_static(),
+                text: value.text.into_static(),
+            }),
+            Event::CodeBlock(value) => Event::CodeBlock(CodeBlockEvent {
+                language: value.language.map(|x| x.into_static()),
+                args: value.args.map(|x| {
+                    x.into_iter()
+                        .map(|(k, v)| (k.into_static(), v.into_static()))
+                        .collect()
+                }),
+                code: value.code.into_static(),
+            }),
+            Event::Directive(value) => Event::Directive(DirectiveEvent {
+                name: value.name.into_static(),
+                argument: value.argument.map(|x| x.into_static()),
+                front_matter: value.front_matter,
+                body: value.body.into_static(),
+            }),
+            Event::InlineCode(value) => Event::InlineCode(InlineCodeEvent {
+                code: value.code.into_static(),
+            }),
+            Event::Image(value) => Event::Image(ImageEvent {
+                target: value.target.into_static(),
+                alt: value.alt.map(|x| x.into_static()),
+                title: value.title.map(|x| x.into_static()),
+            }),
+            Event::RawHtml(value) => Event::RawHtml(RawHtmlEvent {
+                html: value.html.into_static(),
+            }),
+            Event::SoftBreak => Event::SoftBreak,
+            Event::HardBreak => Event::HardBreak,
+            Event::Rule => Event::Rule,
+            Event::Checkbox(value) => Event::Checkbox(value),
+            Event::FootnoteReference(value) => Event::FootnoteReference(FootnoteReferenceEvent {
+                target: value.target.into_static(),
+            }),
+            Event::MetaData(value) => Event::MetaData(MetaDataEvent {
+                key: value.key.into_static(),
+                value: value.value.clone(),
+            }),
+            Event::Error(value) => Event::Error(ErrorEvent {
+                title: value.title.into_static(),
+                description: value.description.map(|x| x.into_static()),
+            }),
         }
     }
 }

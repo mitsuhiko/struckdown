@@ -1,7 +1,8 @@
 //! Abstracts event stream modifications.
-use crate::event::AnnotatedEvent;
+use crate::event::{AnnotatedEvent, Event, Str};
 use crate::parser::{Parser, ParserOptions};
 use crate::processors::Processor;
+use crate::value::Value;
 
 /// Helper for applying preconfigured processors to an event stream.
 pub struct Pipeline {
@@ -64,6 +65,25 @@ impl Pipeline {
         source: &'data str,
     ) -> Box<dyn Iterator<Item = AnnotatedEvent<'data>> + 'data> {
         self.apply_ref(Box::new(self.parser.parse(source)))
+    }
+
+    /// Extracts a meta data tree from an event stream.
+    pub fn extract_metadata<
+        'data: 'event,
+        'options: 'data,
+        'event,
+        I: Iterator<Item = &'event AnnotatedEvent<'data>> + 'event,
+    >(
+        &'options self,
+        iter: I,
+    ) -> impl Iterator<Item = (&'event Str<'data>, &'event Value)> {
+        iter.filter_map(|annotated_event| {
+            if let Event::MetaData(ref md) = annotated_event.event {
+                Some((&md.key, &md.value))
+            } else {
+                None
+            }
+        })
     }
 }
 
