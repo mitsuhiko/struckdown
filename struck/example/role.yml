@@ -1,0 +1,6 @@
+processors:
+  - processor: auto_anchors
+  - processor: table_of_contents
+  - processor: external
+    cmd: python3
+    args: [example/role.py]
