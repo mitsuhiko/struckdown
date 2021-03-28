@@ -4,87 +4,101 @@ expression: events
 input_file: struckdown/tests/inputs/hello.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: heading1
-  - offset: 0
+- type: start_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 15
     line: 1
     column: 0
-- - type: text
-    text: Hello World!
-  - offset: 2
+- type: text
+  text: Hello World!
+  location:
+    offset: 2
     len: 12
     line: 1
     column: 2
-- - type: end_tag
-    tag: heading1
-  - offset: 0
+- type: end_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 15
     line: 1
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 16
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 16
     len: 70
     line: 3
     column: 0
-- - type: text
-    text: "This is a very basic example with "
-  - offset: 16
+- type: text
+  text: "This is a very basic example with "
+  location:
+    offset: 16
     len: 34
     line: 3
     column: 0
-- - type: start_tag
-    tag: emphasis
-  - offset: 50
+- type: start_tag
+  tag: emphasis
+  location:
+    offset: 50
     len: 10
     line: 3
     column: 34
-- - type: text
-    text: emphasis
-  - offset: 51
+- type: text
+  text: emphasis
+  location:
+    offset: 51
     len: 8
     line: 3
     column: 35
-- - type: end_tag
-    tag: emphasis
-  - offset: 50
+- type: end_tag
+  tag: emphasis
+  location:
+    offset: 50
     len: 10
     line: 3
     column: 34
-- - type: text
-    text: " and "
-  - offset: 60
+- type: text
+  text: " and "
+  location:
+    offset: 60
     len: 5
     line: 3
     column: 44
-- - type: start_tag
-    tag: emphasis_alt
-  - offset: 65
+- type: start_tag
+  tag: emphasis_alt
+  location:
+    offset: 65
     len: 20
     line: 3
     column: 49
-- - type: text
-    text: the other emphasis
-  - offset: 66
+- type: text
+  text: the other emphasis
+  location:
+    offset: 66
     len: 18
     line: 3
     column: 50
-- - type: end_tag
-    tag: emphasis_alt
-  - offset: 65
+- type: end_tag
+  tag: emphasis_alt
+  location:
+    offset: 65
     len: 20
     line: 3
     column: 49
-- - type: text
-    text: "."
-  - offset: 85
+- type: text
+  text: "."
+  location:
+    offset: 85
     len: 1
     line: 3
     column: 69
-- - type: end_tag
-    tag: paragraph
-  - offset: 16
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 16
     len: 70
     line: 3
     column: 0

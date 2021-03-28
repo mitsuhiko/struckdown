@@ -4,163 +4,188 @@ expression: events
 input_file: struckdown/tests/inputs/links.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: unordered_list
-  - offset: 0
+- type: start_tag
+  tag: unordered_list
+  location:
+    offset: 0
     len: 124
     line: 1
     column: 0
-- - type: start_tag
-    tag: list_item
-  - offset: 0
+- type: start_tag
+  tag: list_item
+  location:
+    offset: 0
     len: 24
     line: 1
     column: 0
-- - type: start_tag
-    tag: link
-    attrs:
-      title: Title
-      target: /
-  - offset: 2
+- type: start_tag
+  tag: link
+  attrs:
+    title: Title
+    target: /
+  location:
+    offset: 2
     len: 21
     line: 1
     column: 2
-- - type: text
-    text: foo_norm
-  - offset: 3
+- type: text
+  text: foo_norm
+  location:
+    offset: 3
     len: 8
     line: 1
     column: 3
-- - type: end_tag
-    tag: link
-  - offset: 2
+- type: end_tag
+  tag: link
+  location:
+    offset: 2
     len: 21
     line: 1
     column: 2
-- - type: end_tag
-    tag: list_item
-  - offset: 0
+- type: end_tag
+  tag: list_item
+  location:
+    offset: 0
     len: 24
     line: 1
     column: 0
-- - type: start_tag
-    tag: list_item
-  - offset: 24
+- type: start_tag
+  tag: list_item
+  location:
+    offset: 24
     len: 12
     line: 2
     column: 0
-- - type: start_tag
-    tag: link
-    attrs:
-      title: Title
-      target: /
-  - offset: 26
+- type: start_tag
+  tag: link
+  attrs:
+    title: Title
+    target: /
+  location:
+    offset: 26
     len: 9
     line: 2
     column: 2
-- - type: text
-    text: foo_ref
-  - offset: 27
+- type: text
+  text: foo_ref
+  location:
+    offset: 27
     len: 7
     line: 2
     column: 3
-- - type: end_tag
-    tag: link
-  - offset: 26
+- type: end_tag
+  tag: link
+  location:
+    offset: 26
     len: 9
     line: 2
     column: 2
-- - type: end_tag
-    tag: list_item
-  - offset: 24
+- type: end_tag
+  tag: list_item
+  location:
+    offset: 24
     len: 12
     line: 2
     column: 0
-- - type: start_tag
-    tag: list_item
-  - offset: 36
+- type: start_tag
+  tag: list_item
+  location:
+    offset: 36
     len: 22
     line: 3
     column: 0
-- - type: start_tag
-    tag: link
-    attrs:
-      target: auto@link.invalid
-  - offset: 38
+- type: start_tag
+  tag: link
+  attrs:
+    target: auto@link.invalid
+  location:
+    offset: 38
     len: 19
     line: 3
     column: 2
-- - type: text
-    text: auto@link.invalid
-  - offset: 39
+- type: text
+  text: auto@link.invalid
+  location:
+    offset: 39
     len: 17
     line: 3
     column: 3
-- - type: end_tag
-    tag: link
-  - offset: 38
+- type: end_tag
+  tag: link
+  location:
+    offset: 38
     len: 19
     line: 3
     column: 2
-- - type: end_tag
-    tag: list_item
-  - offset: 36
+- type: end_tag
+  tag: list_item
+  location:
+    offset: 36
     len: 22
     line: 3
     column: 0
-- - type: start_tag
-    tag: list_item
-  - offset: 58
+- type: start_tag
+  tag: list_item
+  location:
+    offset: 58
     len: 16
     line: 4
     column: 0
-- - type: text
-    text: "["
-  - offset: 60
+- type: text
+  text: "["
+  location:
+    offset: 60
     len: 1
     line: 4
     column: 2
-- - type: text
-    text: unknown_ref
-  - offset: 61
+- type: text
+  text: unknown_ref
+  location:
+    offset: 61
     len: 11
     line: 4
     column: 3
-- - type: text
-    text: "]"
-  - offset: 72
+- type: text
+  text: "]"
+  location:
+    offset: 72
     len: 1
     line: 4
     column: 14
-- - type: end_tag
-    tag: list_item
-  - offset: 58
+- type: end_tag
+  tag: list_item
+  location:
+    offset: 58
     len: 16
     line: 4
     column: 0
-- - type: start_tag
-    tag: list_item
-  - offset: 74
+- type: start_tag
+  tag: list_item
+  location:
+    offset: 74
     len: 50
     line: 5
     column: 0
-- - type: image
-    target: image.png
-    alt: alt em and strong it
-    title: aha
-  - offset: 76
+- type: image
+  target: image.png
+  alt: alt em and strong it
+  title: aha
+  location:
+    offset: 76
     len: 46
     line: 5
     column: 2
-- - type: end_tag
-    tag: list_item
-  - offset: 74
+- type: end_tag
+  tag: list_item
+  location:
+    offset: 74
     len: 50
     line: 5
     column: 0
-- - type: end_tag
-    tag: unordered_list
-  - offset: 0
+- type: end_tag
+  tag: unordered_list
+  location:
+    offset: 0
     len: 124
     line: 1
     column: 0

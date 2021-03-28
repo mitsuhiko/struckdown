@@ -4,18 +4,10 @@ import functools
 
 
 def read_event(line):
-    rv = json.loads(line)
-    if isinstance(rv, list):
-        cmd, location = rv
-        return cmd, location
-    return rv, None
+    return json.loads(line)
 
 
-def dump_event(cmd, location=None):
-    if location is not None:
-        arg = [cmd, location]
-    else:
-        arg = cmd
+def dump_event(cmd):
     return json.dumps(cmd).strip()
 
 

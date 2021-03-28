@@ -3,50 +3,57 @@ source: struckdown/tests/test_snapshots.rs
 expression: events
 input_file: struckdown/tests/inputs/frontmatter.md
 ---
-- - type: document_start
-    front_matter:
-      meta: Some Metadata
-      tags:
-        - foo
-        - bar
-        - baz
-  - offset: 0
+- type: document_start
+  front_matter:
+    meta: Some Metadata
+    tags:
+      - foo
+      - bar
+      - baz
+  location:
+    offset: 0
     len: 53
     line: 1
     column: 0
-- - type: start_tag
-    tag: heading1
-  - offset: 0
+- type: start_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 18
     line: 1
     column: 0
-- - type: text
-    text: Title goes here
-  - offset: 2
+- type: text
+  text: Title goes here
+  location:
+    offset: 2
     len: 15
     line: 1
     column: 2
-- - type: end_tag
-    tag: heading1
-  - offset: 0
+- type: end_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 18
     line: 1
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 19
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 19
     len: 15
     line: 3
     column: 0
-- - type: text
-    text: Text goes here
-  - offset: 19
+- type: text
+  text: Text goes here
+  location:
+    offset: 19
     len: 14
     line: 3
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 19
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 19
     len: 15
     line: 3
     column: 0

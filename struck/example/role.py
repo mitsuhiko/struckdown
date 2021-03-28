@@ -2,8 +2,9 @@ import sys
 from struckdown import streamprocessor
 
 
-def expand_link_role(cmd):
-    target = cmd['text']
+def expand_link_role(event):
+    target = event['text']
+    location = event.get("location")
     return [
         {
             "type": "start_tag",
@@ -12,14 +13,17 @@ def expand_link_role(cmd):
                 "target": "https://example.com/api/%s'" % target,
                 "class": "api-link",
             },
+            "location": location,
         },
         {
             "type": "text",
             "text": target,
+            "location": location,
         },
         {
             "type": "end_tag",
             "tag": "link",
+            "location": location,
         },
     ]
 
@@ -27,10 +31,9 @@ def expand_link_role(cmd):
 @streamprocessor
 def main(events):
     for event in events:
-        cmd, location = event
-        if cmd['type'] == 'interpreted_text' and cmd['role'] == 'api':
-            for event in expand_link_role(cmd):
-                yield event, location
+        if event['type'] == 'interpreted_text' and event['role'] == 'api':
+            for event in expand_link_role(event):
+                yield event
         else:
             yield event
 

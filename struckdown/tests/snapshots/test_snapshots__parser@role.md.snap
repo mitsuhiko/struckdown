@@ -4,152 +4,176 @@ expression: events
 input_file: struckdown/tests/inputs/role.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: paragraph
-  - offset: 0
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 55
     line: 1
     column: 0
-- - type: text
-    text: "This shows the use of "
-  - offset: 0
+- type: text
+  text: "This shows the use of "
+  location:
+    offset: 0
     len: 22
     line: 1
     column: 0
-- - type: interpreted_text
-    role: role
-    text: roles
-  - offset: 22
+- type: interpreted_text
+  role: role
+  text: roles
+  location:
+    offset: 22
     len: 13
     line: 1
     column: 22
-- - type: text
-    text: " and "
-  - offset: 35
+- type: text
+  text: " and "
+  location:
+    offset: 35
     len: 5
     line: 1
     column: 35
-- - type: interpreted_text
-    role: role
-    text: roles
-  - offset: 40
+- type: interpreted_text
+  role: role
+  text: roles
+  location:
+    offset: 40
     len: 13
     line: 1
     column: 40
-- - type: text
-    text: "."
-  - offset: 53
+- type: text
+  text: "."
+  location:
+    offset: 53
     len: 1
     line: 1
     column: 53
-- - type: end_tag
-    tag: paragraph
-  - offset: 0
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 55
     line: 1
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 56
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 56
     len: 39
     line: 3
     column: 0
-- - type: text
-    text: "Contrast this {with} "
-  - offset: 56
+- type: text
+  text: "Contrast this {with} "
+  location:
+    offset: 56
     len: 21
     line: 3
     column: 0
-- - type: inline_code
-    code: just some code
-  - offset: 77
+- type: inline_code
+  code: just some code
+  location:
+    offset: 77
     len: 16
     line: 3
     column: 21
-- - type: text
-    text: "."
-  - offset: 93
+- type: text
+  text: "."
+  location:
+    offset: 93
     len: 1
     line: 3
     column: 37
-- - type: end_tag
-    tag: paragraph
-  - offset: 56
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 56
     len: 39
     line: 3
     column: 0
-- - type: code_block
-    language: python
-    args: ~
-    code: "print(\"Hello World\")\n"
-  - offset: 96
+- type: code_block
+  language: python
+  args: ~
+  code: "print(\"Hello World\")\n"
+  location:
+    offset: 96
     len: 34
     line: 5
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 132
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 132
     len: 20
     line: 9
     column: 0
-- - type: text
-    text: "But this is a role:"
-  - offset: 132
+- type: text
+  text: "But this is a role:"
+  location:
+    offset: 132
     len: 19
     line: 9
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 132
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 132
     len: 20
     line: 9
     column: 0
-- - type: directive
-    name: role
-    argument: arguments
-    front_matter: ~
-    body: "Hello\n"
-  - offset: 153
+- type: directive
+  name: role
+  argument: arguments
+  front_matter: ~
+  body: "Hello\n"
+  location:
+    offset: 153
     len: 29
     line: 11
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 184
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 184
     len: 16
     line: 15
     column: 0
-- - type: text
-    text: Stuff
-  - offset: 184
+- type: text
+  text: Stuff
+  location:
+    offset: 184
     len: 5
     line: 15
     column: 0
-- - type: soft_break
-  - offset: 189
+- type: soft_break
+  location:
+    offset: 189
     len: 1
     line: 15
     column: 5
-- - type: text
-    text: Bar
-  - offset: 190
+- type: text
+  text: Bar
+  location:
+    offset: 190
     len: 3
     line: 16
     column: 0
-- - type: hard_break
-  - offset: 193
+- type: hard_break
+  location:
+    offset: 193
     len: 3
     line: 16
     column: 3
-- - type: text
-    text: Baz
-  - offset: 196
+- type: text
+  text: Baz
+  location:
+    offset: 196
     len: 3
     line: 17
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 184
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 184
     len: 16
     line: 15
     column: 0

@@ -4,12 +4,8 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::convert::TryInto;
 use std::fmt::{self, Debug, Display};
-use std::marker::PhantomData;
 
 use pulldown_cmark as cm;
-use serde::de::value::{MapAccessDeserializer, SeqAccessDeserializer};
-use serde::de::{MapAccess, SeqAccess, Visitor};
-use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::value::Value;
@@ -169,11 +165,13 @@ pub struct Location {
 /// An annotated event is generally the same as an [`Event`] but it contains
 /// optional annotations.  Annotations are generally just the location information
 /// about where the event ocurred in the original source document.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnnotatedEvent<'data> {
     /// The actual event.
+    #[serde(flatten)]
     pub event: Event<'data>,
     /// The optional location.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<Location>,
 }
 
@@ -201,57 +199,6 @@ impl<'data> AnnotatedEvent<'data> {
 impl<'data, T: Into<Event<'data>>> From<T> for AnnotatedEvent<'data> {
     fn from(value: T) -> AnnotatedEvent<'data> {
         AnnotatedEvent::new(value, None)
-    }
-}
-
-impl<'data> Serialize for AnnotatedEvent<'data> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        if let Some(ref location) = self.location {
-            let mut s = serializer.serialize_tuple(2)?;
-            s.serialize_element(&self.event)?;
-            s.serialize_element(location)?;
-            s.end()
-        } else {
-            self.event.serialize(serializer)
-        }
-    }
-}
-
-impl<'de, 'data> Deserialize<'de> for AnnotatedEvent<'data> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct ArrayOrStruct<'data>(PhantomData<AnnotatedEvent<'data>>);
-
-        impl<'de, 'data> Visitor<'de> for ArrayOrStruct<'data> {
-            type Value = AnnotatedEvent<'data>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("array or map")
-            }
-
-            fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
-            where
-                A: SeqAccess<'de>,
-            {
-                Deserialize::deserialize(SeqAccessDeserializer::new(seq))
-                    .map(|(event, location): (Event, _)| AnnotatedEvent::new(event, location))
-            }
-
-            fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
-            where
-                M: MapAccess<'de>,
-            {
-                Deserialize::deserialize(MapAccessDeserializer::new(map))
-                    .map(|event: Event| AnnotatedEvent::new(event, None))
-            }
-        }
-
-        deserializer.deserialize_any(ArrayOrStruct(PhantomData))
     }
 }
 

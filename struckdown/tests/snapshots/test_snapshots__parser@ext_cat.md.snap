@@ -3,54 +3,62 @@ source: struckdown/tests/test_snapshots.rs
 expression: events
 input_file: struckdown/tests/inputs/ext_cat.md
 ---
-- - type: document_start
-    front_matter:
-      processors:
-        - processor: external
-          cmd: cat
-  - offset: 0
+- type: document_start
+  front_matter:
+    processors:
+      - processor: external
+        cmd: cat
+  location:
+    offset: 0
     len: 58
     line: 1
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 0
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 17
     line: 1
     column: 0
-- - type: text
-    text: "Hello "
-  - offset: 0
+- type: text
+  text: "Hello "
+  location:
+    offset: 0
     len: 6
     line: 1
     column: 0
-- - type: start_tag
-    tag: strong
-  - offset: 6
+- type: start_tag
+  tag: strong
+  location:
+    offset: 6
     len: 9
     line: 1
     column: 6
-- - type: text
-    text: World
-  - offset: 8
+- type: text
+  text: World
+  location:
+    offset: 8
     len: 5
     line: 1
     column: 8
-- - type: end_tag
-    tag: strong
-  - offset: 6
+- type: end_tag
+  tag: strong
+  location:
+    offset: 6
     len: 9
     line: 1
     column: 6
-- - type: text
-    text: "!"
-  - offset: 15
+- type: text
+  text: "!"
+  location:
+    offset: 15
     len: 1
     line: 1
     column: 15
-- - type: end_tag
-    tag: paragraph
-  - offset: 0
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 17
     line: 1
     column: 0

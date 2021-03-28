@@ -3,142 +3,164 @@ source: struckdown/tests/test_snapshots.rs
 expression: events
 input_file: struckdown/tests/inputs/ext_autoanchors_max_level.md
 ---
-- - type: document_start
-    front_matter:
-      processors:
-        - processor: auto_anchors
-          max_level: 1
-  - offset: 0
+- type: document_start
+  front_matter:
+    processors:
+      - processor: auto_anchors
+        max_level: 1
+  location:
+    offset: 0
     len: 66
     line: 1
     column: 0
-- - type: start_tag
-    tag: heading1
-    attrs:
-      id: heading-1
-  - offset: 0
+- type: start_tag
+  tag: heading1
+  attrs:
+    id: heading-1
+  location:
+    offset: 0
     len: 12
     line: 1
     column: 0
-- - type: text
-    text: Heading 1
-  - offset: 2
+- type: text
+  text: Heading 1
+  location:
+    offset: 2
     len: 9
     line: 1
     column: 2
-- - type: end_tag
-    tag: heading1
-  - offset: 0
+- type: end_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 12
     line: 1
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 13
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 13
     len: 7
     line: 3
     column: 0
-- - type: text
-    text: Text 1
-  - offset: 13
+- type: text
+  text: Text 1
+  location:
+    offset: 13
     len: 6
     line: 3
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 13
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 13
     len: 7
     line: 3
     column: 0
-- - type: start_tag
-    tag: heading2
-    attrs:
-      id: manual-id
-  - offset: 21
+- type: start_tag
+  tag: heading2
+  attrs:
+    id: manual-id
+  location:
+    offset: 21
     len: 26
     line: 5
     column: 0
-- - type: text
-    text: Heading 2
-  - offset: 24
+- type: text
+  text: Heading 2
+  location:
+    offset: 24
     len: 9
     line: 5
     column: 3
-- - type: end_tag
-    tag: heading2
-  - offset: 21
+- type: end_tag
+  tag: heading2
+  location:
+    offset: 21
     len: 26
     line: 5
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 48
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 48
     len: 7
     line: 7
     column: 0
-- - type: text
-    text: Text 2
-  - offset: 48
+- type: text
+  text: Text 2
+  location:
+    offset: 48
     len: 6
     line: 7
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 48
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 48
     len: 7
     line: 7
     column: 0
-- - type: start_tag
-    tag: heading3
-  - offset: 56
+- type: start_tag
+  tag: heading3
+  location:
+    offset: 56
     len: 16
     line: 9
     column: 0
-- - type: text
-    text: "Heading "
-  - offset: 60
+- type: text
+  text: "Heading "
+  location:
+    offset: 60
     len: 8
     line: 9
     column: 4
-- - type: start_tag
-    tag: emphasis_alt
-  - offset: 68
+- type: start_tag
+  tag: emphasis_alt
+  location:
+    offset: 68
     len: 3
     line: 9
     column: 12
-- - type: text
-    text: "3"
-  - offset: 69
+- type: text
+  text: "3"
+  location:
+    offset: 69
     len: 1
     line: 9
     column: 13
-- - type: end_tag
-    tag: emphasis_alt
-  - offset: 68
+- type: end_tag
+  tag: emphasis_alt
+  location:
+    offset: 68
     len: 3
     line: 9
     column: 12
-- - type: end_tag
-    tag: heading3
-  - offset: 56
+- type: end_tag
+  tag: heading3
+  location:
+    offset: 56
     len: 16
     line: 9
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 73
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 73
     len: 7
     line: 11
     column: 0
-- - type: text
-    text: Text 3
-  - offset: 73
+- type: text
+  text: Text 3
+  location:
+    offset: 73
     len: 6
     line: 11
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 73
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 73
     len: 7
     line: 11
     column: 0

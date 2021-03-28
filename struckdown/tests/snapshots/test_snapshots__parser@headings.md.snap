@@ -4,159 +4,170 @@ expression: events
 input_file: struckdown/tests/inputs/headings.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: heading1
-    attrs:
-      id: id-one
-  - offset: 0
+- type: start_tag
+  tag: heading1
+  attrs:
+    id: id-one
+  location:
+    offset: 0
     len: 18
     line: 1
     column: 0
-- - type: inline_code
-    code: One
-  - offset: 2
+- type: inline_code
+  code: One
+  location:
+    offset: 2
     len: 5
     line: 1
     column: 2
-- - type: text
-    text: ""
-  - offset: 7
-    len: 0
-    line: 1
-    column: 7
-- - type: end_tag
-    tag: heading1
-  - offset: 0
+- type: end_tag
+  tag: heading1
+  location:
+    offset: 0
     len: 18
     line: 1
     column: 0
-- - type: start_tag
-    tag: heading2
-    attrs:
-      id: id-two
-  - offset: 19
+- type: start_tag
+  tag: heading2
+  attrs:
+    id: id-two
+  location:
+    offset: 19
     len: 17
     line: 3
     column: 0
-- - type: text
-    text: Two
-  - offset: 22
+- type: text
+  text: Two
+  location:
+    offset: 22
     len: 3
     line: 3
     column: 3
-- - type: end_tag
-    tag: heading2
-  - offset: 19
+- type: end_tag
+  tag: heading2
+  location:
+    offset: 19
     len: 17
     line: 3
     column: 0
-- - type: start_tag
-    tag: heading3
-    attrs:
-      id: id-three
-  - offset: 37
+- type: start_tag
+  tag: heading3
+  attrs:
+    id: id-three
+  location:
+    offset: 37
     len: 24
     line: 5
     column: 0
-- - type: start_tag
-    tag: emphasis_alt
-  - offset: 41
+- type: start_tag
+  tag: emphasis_alt
+  location:
+    offset: 41
     len: 7
     line: 5
     column: 4
-- - type: text
-    text: Three
-  - offset: 42
+- type: text
+  text: Three
+  location:
+    offset: 42
     len: 5
     line: 5
     column: 5
-- - type: end_tag
-    tag: emphasis_alt
-  - offset: 41
+- type: end_tag
+  tag: emphasis_alt
+  location:
+    offset: 41
     len: 7
     line: 5
     column: 4
-- - type: text
-    text: ""
-  - offset: 48
-    len: 0
-    line: 5
-    column: 11
-- - type: end_tag
-    tag: heading3
-  - offset: 37
+- type: end_tag
+  tag: heading3
+  location:
+    offset: 37
     len: 24
     line: 5
     column: 0
-- - type: start_tag
-    tag: heading4
-  - offset: 62
+- type: start_tag
+  tag: heading4
+  location:
+    offset: 62
     len: 10
     line: 7
     column: 0
-- - type: text
-    text: Four
-  - offset: 67
+- type: text
+  text: Four
+  location:
+    offset: 67
     len: 4
     line: 7
     column: 5
-- - type: end_tag
-    tag: heading4
-  - offset: 62
+- type: end_tag
+  tag: heading4
+  location:
+    offset: 62
     len: 10
     line: 7
     column: 0
-- - type: start_tag
-    tag: heading5
-  - offset: 73
+- type: start_tag
+  tag: heading5
+  location:
+    offset: 73
     len: 11
     line: 9
     column: 0
-- - type: text
-    text: Five
-  - offset: 79
+- type: text
+  text: Five
+  location:
+    offset: 79
     len: 4
     line: 9
     column: 6
-- - type: end_tag
-    tag: heading5
-  - offset: 73
+- type: end_tag
+  tag: heading5
+  location:
+    offset: 73
     len: 11
     line: 9
     column: 0
-- - type: start_tag
-    tag: heading6
-  - offset: 85
+- type: start_tag
+  tag: heading6
+  location:
+    offset: 85
     len: 11
     line: 11
     column: 0
-- - type: text
-    text: Six
-  - offset: 92
+- type: text
+  text: Six
+  location:
+    offset: 92
     len: 3
     line: 11
     column: 7
-- - type: end_tag
-    tag: heading6
-  - offset: 85
+- type: end_tag
+  tag: heading6
+  location:
+    offset: 85
     len: 11
     line: 11
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 97
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 97
     len: 14
     line: 13
     column: 0
-- - type: text
-    text: "####### Seven"
-  - offset: 97
+- type: text
+  text: "####### Seven"
+  location:
+    offset: 97
     len: 13
     line: 13
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 97
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 97
     len: 14
     line: 13
     column: 0

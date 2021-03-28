@@ -4,332 +4,383 @@ expression: events
 input_file: struckdown/tests/inputs/table.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: paragraph
-  - offset: 0
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 28
     line: 1
     column: 0
-- - type: text
-    text: "| a | b | c |"
-  - offset: 0
+- type: text
+  text: "| a | b | c |"
+  location:
+    offset: 0
     len: 13
     line: 1
     column: 0
-- - type: soft_break
-  - offset: 13
+- type: soft_break
+  location:
+    offset: 13
     len: 1
     line: 1
     column: 13
-- - type: text
-    text: "| 1 | 2 | 3 |"
-  - offset: 14
+- type: text
+  text: "| 1 | 2 | 3 |"
+  location:
+    offset: 14
     len: 13
     line: 2
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 0
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 28
     line: 1
     column: 0
-- - type: start_tag
-    tag: table
-  - offset: 29
+- type: start_tag
+  tag: table
+  location:
+    offset: 29
     len: 60
     line: 4
     column: 0
 - type: start_tag
   tag: table_header
-- - type: start_tag
-    tag: table_head
-  - offset: 31
+- type: start_tag
+  tag: table_head
+  location:
+    offset: 31
     len: 1
     line: 4
     column: 2
-- - type: text
-    text: a
-  - offset: 31
+- type: text
+  text: a
+  location:
+    offset: 31
     len: 1
     line: 4
     column: 2
-- - type: end_tag
-    tag: table_head
-  - offset: 31
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 31
     len: 1
     line: 4
     column: 2
-- - type: start_tag
-    tag: table_head
-  - offset: 37
+- type: start_tag
+  tag: table_head
+  location:
+    offset: 37
     len: 1
     line: 4
     column: 8
-- - type: text
-    text: b
-  - offset: 37
+- type: text
+  text: b
+  location:
+    offset: 37
     len: 1
     line: 4
     column: 8
-- - type: end_tag
-    tag: table_head
-  - offset: 37
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 37
     len: 1
     line: 4
     column: 8
-- - type: start_tag
-    tag: table_head
-  - offset: 43
+- type: start_tag
+  tag: table_head
+  location:
+    offset: 43
     len: 1
     line: 4
     column: 14
-- - type: text
-    text: c
-  - offset: 43
+- type: text
+  text: c
+  location:
+    offset: 43
     len: 1
     line: 4
     column: 14
-- - type: end_tag
-    tag: table_head
-  - offset: 43
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 43
     len: 1
     line: 4
     column: 14
-- - type: end_tag
-    tag: table_header
-  - offset: 29
+- type: end_tag
+  tag: table_header
+  location:
+    offset: 29
     len: 20
     line: 4
     column: 0
 - type: start_tag
   tag: table_body
-- - type: start_tag
-    tag: table_row
-  - offset: 69
+- type: start_tag
+  tag: table_row
+  location:
+    offset: 69
     len: 20
     line: 6
     column: 0
-- - type: start_tag
-    tag: table_cell
-  - offset: 71
+- type: start_tag
+  tag: table_cell
+  location:
+    offset: 71
     len: 1
     line: 6
     column: 2
-- - type: text
-    text: "1"
-  - offset: 71
+- type: text
+  text: "1"
+  location:
+    offset: 71
     len: 1
     line: 6
     column: 2
-- - type: end_tag
-    tag: table_cell
-  - offset: 71
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 71
     len: 1
     line: 6
     column: 2
-- - type: start_tag
-    tag: table_cell
-  - offset: 77
+- type: start_tag
+  tag: table_cell
+  location:
+    offset: 77
     len: 1
     line: 6
     column: 8
-- - type: text
-    text: "2"
-  - offset: 77
+- type: text
+  text: "2"
+  location:
+    offset: 77
     len: 1
     line: 6
     column: 8
-- - type: end_tag
-    tag: table_cell
-  - offset: 77
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 77
     len: 1
     line: 6
     column: 8
-- - type: start_tag
-    tag: table_cell
-  - offset: 83
+- type: start_tag
+  tag: table_cell
+  location:
+    offset: 83
     len: 1
     line: 6
     column: 14
-- - type: text
-    text: "3"
-  - offset: 83
+- type: text
+  text: "3"
+  location:
+    offset: 83
     len: 1
     line: 6
     column: 14
-- - type: end_tag
-    tag: table_cell
-  - offset: 83
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 83
     len: 1
     line: 6
     column: 14
-- - type: end_tag
-    tag: table_row
-  - offset: 69
+- type: end_tag
+  tag: table_row
+  location:
+    offset: 69
     len: 20
     line: 6
     column: 0
 - type: end_tag
   tag: table_body
-- - type: end_tag
-    tag: table
-  - offset: 29
+- type: end_tag
+  tag: table
+  location:
+    offset: 29
     len: 60
     line: 4
     column: 0
-- - type: start_tag
-    tag: table
-  - offset: 90
+- type: start_tag
+  tag: table
+  location:
+    offset: 90
     len: 60
     line: 8
     column: 0
 - type: start_tag
   tag: table_header
-- - type: start_tag
-    tag: table_head
-    attrs:
-      alignment: left
-  - offset: 92
+- type: start_tag
+  tag: table_head
+  attrs:
+    alignment: left
+  location:
+    offset: 92
     len: 1
     line: 8
     column: 2
-- - type: text
-    text: a
-  - offset: 92
+- type: text
+  text: a
+  location:
+    offset: 92
     len: 1
     line: 8
     column: 2
-- - type: end_tag
-    tag: table_head
-  - offset: 92
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 92
     len: 1
     line: 8
     column: 2
-- - type: start_tag
-    tag: table_head
-    attrs:
-      alignment: center
-  - offset: 99
+- type: start_tag
+  tag: table_head
+  attrs:
+    alignment: center
+  location:
+    offset: 99
     len: 1
     line: 8
     column: 9
-- - type: text
-    text: b
-  - offset: 99
+- type: text
+  text: b
+  location:
+    offset: 99
     len: 1
     line: 8
     column: 9
-- - type: end_tag
-    tag: table_head
-  - offset: 99
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 99
     len: 1
     line: 8
     column: 9
-- - type: start_tag
-    tag: table_head
-    attrs:
-      alignment: right
-  - offset: 106
+- type: start_tag
+  tag: table_head
+  attrs:
+    alignment: right
+  location:
+    offset: 106
     len: 1
     line: 8
     column: 16
-- - type: text
-    text: c
-  - offset: 106
+- type: text
+  text: c
+  location:
+    offset: 106
     len: 1
     line: 8
     column: 16
-- - type: end_tag
-    tag: table_head
-  - offset: 106
+- type: end_tag
+  tag: table_head
+  location:
+    offset: 106
     len: 1
     line: 8
     column: 16
-- - type: end_tag
-    tag: table_header
-  - offset: 90
+- type: end_tag
+  tag: table_header
+  location:
+    offset: 90
     len: 20
     line: 8
     column: 0
 - type: start_tag
   tag: table_body
-- - type: start_tag
-    tag: table_row
-  - offset: 130
+- type: start_tag
+  tag: table_row
+  location:
+    offset: 130
     len: 20
     line: 10
     column: 0
-- - type: start_tag
-    tag: table_cell
-    attrs:
-      alignment: left
-  - offset: 132
+- type: start_tag
+  tag: table_cell
+  attrs:
+    alignment: left
+  location:
+    offset: 132
     len: 1
     line: 10
     column: 2
-- - type: text
-    text: "1"
-  - offset: 132
+- type: text
+  text: "1"
+  location:
+    offset: 132
     len: 1
     line: 10
     column: 2
-- - type: end_tag
-    tag: table_cell
-  - offset: 132
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 132
     len: 1
     line: 10
     column: 2
-- - type: start_tag
-    tag: table_cell
-    attrs:
-      alignment: center
-  - offset: 139
+- type: start_tag
+  tag: table_cell
+  attrs:
+    alignment: center
+  location:
+    offset: 139
     len: 1
     line: 10
     column: 9
-- - type: text
-    text: "2"
-  - offset: 139
+- type: text
+  text: "2"
+  location:
+    offset: 139
     len: 1
     line: 10
     column: 9
-- - type: end_tag
-    tag: table_cell
-  - offset: 139
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 139
     len: 1
     line: 10
     column: 9
-- - type: start_tag
-    tag: table_cell
-    attrs:
-      alignment: right
-  - offset: 146
+- type: start_tag
+  tag: table_cell
+  attrs:
+    alignment: right
+  location:
+    offset: 146
     len: 1
     line: 10
     column: 16
-- - type: text
-    text: "3"
-  - offset: 146
+- type: text
+  text: "3"
+  location:
+    offset: 146
     len: 1
     line: 10
     column: 16
-- - type: end_tag
-    tag: table_cell
-  - offset: 146
+- type: end_tag
+  tag: table_cell
+  location:
+    offset: 146
     len: 1
     line: 10
     column: 16
-- - type: end_tag
-    tag: table_row
-  - offset: 130
+- type: end_tag
+  tag: table_row
+  location:
+    offset: 130
     len: 20
     line: 10
     column: 0
 - type: end_tag
   tag: table_body
-- - type: end_tag
-    tag: table
-  - offset: 90
+- type: end_tag
+  tag: table
+  location:
+    offset: 90
     len: 60
     line: 8
     column: 0

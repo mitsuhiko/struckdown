@@ -4,59 +4,67 @@ expression: events
 input_file: struckdown/tests/inputs/directives.md
 ---
 - type: document_start
-- - type: start_tag
-    tag: paragraph
-  - offset: 0
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 39
     line: 1
     column: 0
-- - type: text
-    text: "Example directive with nested parsing:"
-  - offset: 0
+- type: text
+  text: "Example directive with nested parsing:"
+  location:
+    offset: 0
     len: 38
     line: 1
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 0
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 0
     len: 39
     line: 1
     column: 0
-- - type: directive
-    name: video
-    argument: inline-argument
-    front_matter:
-      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-      title: Rick Roll
-    body: "Raw body content that goes with the directive.\n\n```{nested} nested-inline-argument\nThis is an inline directive without front-matter arguments.\n```\n"
-  - offset: 40
+- type: directive
+  name: video
+  argument: inline-argument
+  front_matter:
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    title: Rick Roll
+  body: "Raw body content that goes with the directive.\n\n```{nested} nested-inline-argument\nThis is an inline directive without front-matter arguments.\n```\n"
+  location:
+    offset: 40
     len: 254
     line: 3
     column: 0
-- - type: start_tag
-    tag: paragraph
-  - offset: 296
+- type: start_tag
+  tag: paragraph
+  location:
+    offset: 296
     len: 22
     line: 16
     column: 0
-- - type: text
-    text: "Invalid front matter:"
-  - offset: 296
+- type: text
+  text: "Invalid front matter:"
+  location:
+    offset: 296
     len: 21
     line: 16
     column: 0
-- - type: end_tag
-    tag: paragraph
-  - offset: 296
+- type: end_tag
+  tag: paragraph
+  location:
+    offset: 296
     len: 22
     line: 16
     column: 0
-- - type: directive
-    name: invalid
-    argument: ~
-    front_matter: ~
-    body: "---\n[[[[\n---\nstuff\n"
-  - offset: 319
+- type: directive
+  name: invalid
+  argument: ~
+  front_matter: ~
+  body: "---\n[[[[\n---\nstuff\n"
+  location:
+    offset: 319
     len: 35
     line: 18
     column: 0
