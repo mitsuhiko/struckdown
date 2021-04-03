@@ -64,6 +64,7 @@ impl Default for ParserOptions {
 }
 
 /// A configurable parser for struckdown.
+#[derive(Debug)]
 pub struct Parser {
     options: ParserOptions,
 }

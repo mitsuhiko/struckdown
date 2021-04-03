@@ -1,4 +1,6 @@
 //! Abstracts event stream modifications.
+use std::fmt;
+
 use crate::event::{AnnotatedEvent, Event, Str};
 use crate::parser::{Parser, ParserOptions};
 use crate::processors::Processor;
@@ -13,6 +15,14 @@ pub struct Pipeline {
 impl Default for Pipeline {
     fn default() -> Pipeline {
         Pipeline::new()
+    }
+}
+
+impl fmt::Debug for Pipeline {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Pipeline")
+            .field("parser", &self.parser)
+            .finish()
     }
 }
 
